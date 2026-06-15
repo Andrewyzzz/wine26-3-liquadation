@@ -384,6 +384,9 @@ The all-or-nothing clearing-existence problem is NP-complete, even for collatera
 Membership is Proposition~\ref{prop:aonNPbalanced}: a liquidation set is a polynomial certificate, and prices and threshold inequalities can be checked directly. For hardness, Appendix~\ref{app:discreteNP} gives a polynomial reduction from 3-SAT. The construction uses free liquidation bits for variables, a DeFi-realizable threshold-gate library for the Boolean circuit, and a SAT-gated odd-NOT ring. If the formula is satisfied, the gate layer forces the controller on and the odd ring has a unique consistent state; if the formula is unsatisfied, the controller is off and the ring reduces to \(r=\NOT(r)\), so no all-or-nothing clearing exists. The odd collateral-debt cycle is inside the same connected component as the SAT gate, and the construction respects the close-factor bound and the shared-collateral rank-one identities of Remark~\ref{rem:rankone}. Thus the bottom-right cell of Table~\ref{tab:map} is NP-complete.
 \end{proof}
 
+\paragraph{Construction roadmap.}
+The appendix proves realizability in three layers. First, it isolates the rank-one constraint imposed by shared collateral and uses the corrected controller-ring witness \((w_{R_1},U_W,w_W,u_W)=(1,4,4,1)\). Second, it implements only a fixed threshold-gate library, not arbitrary signed weights. Third, a SAT-controlled odd-NOT ring makes the instance clear exactly when the formula is satisfiable and attaches the odd asset cycle to the Boolean component.
+
 \section{PPAD-Hardness in the Non-Bipartite Regime}
 \label{sec:hardness}
 Our hardness proof uses only two generalized-circuit gates. Let \(\T\) denote clipping to \([0,1]\). A \(\kappa\)-approximate assignment gives each wire a value in \([0,1]\) and makes every gate output differ from its prescribed value by at most \(\kappa\). This is a local notion of satisfaction: circuits may contain cycles, and no topological evaluation order is assumed.
@@ -420,7 +423,7 @@ For each circuit wire \(v\), create an asset and encode \(y_v=2-p_v\). Intended 
  \quad c=(2D-2C)/\eps .
  \label{eq:writer}
 \end{equation}
-If this writer is the unique effective writer of \(O\), then \(y_O=x\).  When \(\lambda<1\), the gadget defines a unique functional output and approximate-clearing residuals are amplified by at most a constant factor.  All gadgets below have \(\lambda\le1/2\) or \(1/3\), except for no high-gain construction at all.  The wire band is invariant: unique writers output \(x\in[0,1]\), and the only co-writing operation is the self-bounding average gadget.
+If this writer is the unique effective writer of \(O\), then \(y_O=x\).  When \(\lambda<1\), the gadget defines a unique functional output and approximate-clearing residuals are amplified by at most a constant factor.  All gadgets below have self coefficient at most \(1/2\), and the NOT and averaging blocks use coefficient \(1/3\). The construction never uses a high-gain amplification chain. The wire band is invariant: unique writers output \(x\in[0,1]\), and the only co-writing operation is the self-bounding average gadget.
 
 The construction respects a close-factor bound.  If a writer should contribute \(\eta\) units of output price drop, take \(C=1\), \(\alpha=\varphi/2\), and output slope \(s_O=2\eta/\varphi\). Then \(s_O\alpha=\eta\) and \(\alpha\le\varphi C\). Thus coefficients are implemented through market depth, not by selling more collateral than a position contains.
 
@@ -445,12 +448,30 @@ Replace each source gate by the corresponding constant-size macro. Debt-leg fan-
 
 The target search problem is total: clipping makes the clearing map continuous on a compact box, so Brouwer gives at least one exact clearing. A total-search reduction therefore needs only the forward decoding property above; we do not prove that every approximate circuit solution extends to a clearing.
 
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[scale=0.86, wire/.style={circle,draw,minimum size=7mm}, >=Latex]
+  \node[wire] (U) at (0,0) {$U$};
+  \node[wire] (Ub) at (1.65,0) {$\bar U$};
+  \node[wire] (A) at (3.3,0) {$A$};
+  \node[wire] (Ab) at (4.95,0) {$\bar A$};
+  \node[wire] (O) at (6.6,0) {$O$};
+  \draw[-,thick] (U)--node[above] {\scriptsize NOT} (Ub);
+  \draw[-,thick] (Ub)--node[above] {\scriptsize avg writer} (A);
+  \draw[-,thick] (A)--node[above] {\scriptsize NOT} (Ab);
+  \draw[-,thick] (Ab)--node[above] {\scriptsize output writer} (O);
+  \node at (3.3,-0.72) {\small one SUM input incidence becomes an even asset path of length four};
+\end{tikzpicture}
+\caption{Parity of a SUM macro. A NOT gate contributes an odd collateral-debt path, while each input-to-output incidence of a truncated-SUM macro is realized by the even path \(U-\bar U-A-\bar A-O\).}
+\label{fig:summacro}
+\end{figure}
+
 \begin{lemma}[gadget parity]
 \label{lem:gadgetparity}
 Let \(H_C\) be the signed undirected dependency graph of a SUM/NOT circuit \(C\), with a negative edge for every NOT gate and positive edges from each input of a SUM gate to its output. For the liquidation instance \(I_C\) constructed above, with no additional disconnected anchor, the asset borrowing graph \(\GA(I_C)\) is bipartite if and only if \(H_C\) is sign-balanced. In particular, an odd-NOT cycle in \(C\) maps to an odd cycle in \(\GA(I_C)\).
 \end{lemma}
 \begin{proof}
-The claim is a parity accounting for the gadget templates. A NOT gate \(U\to O\) is implemented by one writer whose collateral is \(O\) and debt is \(U\), hence it contributes an odd path, in fact a single collateral-debt edge, between the two terminal assets. A SUM incidence \(U\to O\) is implemented through the path
+The claim is a parity accounting for the gadget templates; see Fig.~\ref{fig:summacro}. A NOT gate \(U\to O\) is implemented by one writer whose collateral is \(O\) and debt is \(U\), hence it contributes an odd path, in fact a single collateral-debt edge, between the two terminal assets. A SUM incidence \(U\to O\) is implemented through the path
 \[
        U-\bar U-A-\bar A-O,
 \]
