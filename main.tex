@@ -178,7 +178,7 @@ In the collateral-only model, the price map is competitive on the asset borrowin
 For a position with collateral \(k\) and debt \(m\), increasing \(p_m\) increases \(h_i\), hence weakly increases \(x_i\). This increases sales of asset \(k\) and weakly decreases the next price of \(k\). Positions not using \(m\) as debt do not create this cross-effect. The clipping maps are nondecreasing, so the conclusion holds without differentiability assumptions.
 \end{proof}
 
-At the liquidation-intensity level, if \(a_j=a_i\), more liquidation of \(j\) depresses \(p_{a_i}\), making \(i\) less healthy and increasing \(x_i\): a positive dependency. If \(a_j=b_i\), more liquidation of \(j\) depresses \(p_{b_i}\), making \(i\)'s debt cheaper and decreasing \(x_i\): a negative dependency. Thus odd cycles of such negative dependencies are the obstruction to sign-monotonicity. The three-asset example in Fig.~\ref{fig:triangle} is an all-negative directed 3-cycle in \(\GX\).
+At the liquidation-intensity level, if \(a_j=a_i\), more liquidation of \(j\) depresses \(p_{a_i}\), making \(i\) less healthy and increasing \(x_i\): a positive dependency. If \(a_j=b_i\), more liquidation of \(j\) depresses \(p_{b_i}\), making \(i\)'s debt cheaper and decreasing \(x_i\): a negative dependency. Thus odd cycles of such negative dependencies are the obstruction to sign-monotonicity. In the directional reading of \(\GX\), the three-asset example in Fig.~\ref{fig:triangle} is an all-negative directed 3-cycle.
 
 This diagnostic graph is useful for intuition, but the algorithmic boundary is stated on the asset graph \(\GA\). In generic nondegenerate regions, a signed coordinate flip can make all direct liquidation dependencies monotone exactly when the signed feedback graph has no odd negative cycle, in the sense of Harary balance. The asset-level bipartite condition is the clean sufficient condition we use throughout the paper: every collateral-debt edge crosses the cut, so one global sign convention makes the competitive price interactions coherent.
 
@@ -355,7 +355,7 @@ The transformed equations also have a useful complementarity interpretation. Let
   \qquad
   0\le w\perp u-y\ge0.
 \end{equation}
-The base matrix \(B\) is a Z-matrix, since \(A\ge0\). The naive standard-LCP embedding of \eqref{eq:ub-lcp} has a \(+I\) block and is not itself a Z-matrix LCP; the bounded form is the correct structural statement. We use this complementarity view to explain the sign-balanced structure, but our polynomial-time claim is restricted to the contraction/M-matrix regime of Proposition~\ref{prop:smallimpact}.
+The base matrix \(B\) is a Z-matrix, since \(A\ge0\). The naive standard-LCP embedding of \eqref{eq:ub-lcp} has a \(+I\) block and is not itself a Z-matrix LCP; the bounded form is the correct structural statement. Appendix~\ref{app:zmatrix} gives the detailed conversion. We use this complementarity view to explain the sign-balanced structure, but our polynomial-time claim is restricted to the contraction/M-matrix regime of Proposition~\ref{prop:smallimpact}.
 
 \begin{remark}
 The large-impact bipartite regime is an interesting open case. The transform places it in the Tarski/CLS world and gives the upper-bounded Z-matrix structure above, but we do not claim a polynomial-time algorithm for arbitrary \(\rho(A)\ge1\). This does not contradict polynomial algorithms for monotone payment-network clearing~\cite{BestingHoeferHuth2026}. Those algorithms exploit payment-network structure such as no-overpayment/no-fraud constraints and conservation-like flow or circulation properties. The transformed DeFi map is monotone and piecewise-linear, but it is a price-impact liquidation map rather than a payment allocation map; its feedback matrix need not be substochastic or conservative, and in the large-impact regime it may have spectral radius at least one. In the small-impact regime where this feedback becomes contractive, Proposition~\ref{prop:smallimpact} recovers polynomial-time computation.
@@ -516,7 +516,7 @@ The large-impact sign-balanced regime is governed by the following abstract prob
 \]
 We call this the \emph{Subtraction-Free Box Fixed Point} problem. It is equivalent, via Lemma~\ref{lem:gauge}, to the balanced SUM/NOT fragment and, via Theorem~\ref{thm:balancedCLS}, to the transformed sign-balanced DeFi clearing problem. Its box-LCP base is a Z-matrix; when \(\rho(A)<1\) it is an M-matrix/P-matrix case and Proposition~\ref{prop:smallimpact} gives polynomial-time computation. For \(\rho(A)\ge1\), the upper bound is the obstruction: the naive standard-LCP embedding introduces a positive \(+I\) block and leaves the Z-matrix world. Appendix~\ref{app:subtractionfree} records a structural lemma and an EOPL-style attack route, but we leave the exact complexity of the large-impact sign-balanced case open.
 
-Two partial results narrow this gap (Appendix~\ref{app:sfbfp}): under \(\gamma\)-spectral separation of every active SCC, the \emph{exact} least clearing is computable in polynomial time (Theorem~\ref{sfbfp:exact}); and when the price caps \(M_k\), impact products \(s_k\alpha_i\), and inverse smoothing widths \(\theta_iD_i/\varepsilon_i,\,C_i/\varepsilon_i\) are polynomially bounded, an inverse-polynomial-accuracy \(\delta\)-clearing is computable in polynomial time (Proposition~\ref{sfbfp:approx}). The unconditional large-impact case remains open; it reduces to an irreducible critical SCC (\(\rho=1\)) with positive drift.
+Two partial results narrow this gap (Appendix~\ref{app:sfbfp}). Under \(\gamma\)-spectral separation of every active or residual SCC encountered by the recursive block algorithm, the \emph{exact} least clearing is computable in polynomial time (Theorem~\ref{sfbfp:exact}). Under the bounded-magnitude assumptions listed in Corollary~\ref{sfbfp:clearing}, inverse-polynomial-accuracy \(\delta\)-clearing is also polynomial-time computable (Proposition~\ref{sfbfp:approx}). The unconditional large-impact case remains open; it reduces to an irreducible critical SCC (\(\rho=1\)) with positive drift.
 
 \begin{table}[t]
 \centering
@@ -947,12 +947,12 @@ Along the bottom Kleene sequence each coordinate has a monotone phase structure:
 The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\mathbf 1^\top y/\eta\) is a natural path-following viewpoint: \(T_\eta\) is isotone and rounds down, so the potential strictly increases off fixed points and is polynomially bounded. Turning this into an \(\mathsf{EOPL}\) reduction would require a polynomial predecessor selection for the monotone Kleene path; the forward map is single-valued while predecessors need not be. We therefore record this only as an attack route. If it succeeds, the sign-balanced large-impact case would descend from CLS to an EOPL-style subclass.
 
 \paragraph{Open problem.}
-We leave open the exact complexity of large-impact sign-balanced clearing, equivalently of the Subtraction-Free Box Fixed Point problem, equivalently of the balanced SUM/NOT fragment: whether it is in P, in an EOPL-style subclass, or strictly between, for both exact and \(\delta\)-approximate clearing.
+We leave open the exact complexity of large-impact sign-balanced clearing, equivalently of the Subtraction-Free Box Fixed Point problem, equivalently of the balanced SUM/NOT fragment: whether it is in P, in an EOPL-style subclass, or strictly between, for both exact and \(\delta\)-approximate clearing. Appendix~\ref{app:sfbfp} records conditional and approximate polynomial-time algorithms and isolates the remaining \(\rho=1\) critical subcase.
 
 \section{Subtraction-Free Box Fixed Points: An Algorithmic Refinement}
 \label{app:sfbfp}
 
-We refine the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendix~\ref{app:zmatrix}, isolating the single source of difficulty in the large-impact \((\rhospec(A)\ge1)\) regime. Let \(y^\ast\) be its least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the interior spectral bound: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})\le1\) by Lemma~\ref{lem:nonexp}.
+We refine the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendices~\ref{app:zmatrix} and~\ref{app:subtractionfree}, isolating the single source of difficulty in the large-impact \((\rhospec(A)\ge1)\) regime. Let \(y^\ast\) be its least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the interior spectral bound: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})\le1\) by Lemma~\ref{lem:nonexp}.
 
 \paragraph{SCC-DAG decomposition.}
 Form the dependency digraph with arc \(i\to j\) iff \(A_{ij}\ne0\). Let \(C_1,\dots,C_m\) be its strongly connected components, ordered so that whenever \(C_b\) reads \(C_a\) we have \(a<b\).
@@ -1003,7 +1003,7 @@ For any \(B\ge0\), the polyhedron \(P=\{z\ge0:(I-B)z\ge g\}\) is closed under co
 If the least element \(z^\star\) of \(P\) exists with \(z^\star\le u_S\), in particular when \(r<1\) or when \(r=1\) with nonpositive critical drift, then \(z^\star\) is the exact box fixed point, computed in \(\mathrm{poly}(|S|,L)\) time by the LP of Lemma~\ref{sfbfp:lp}. If \(z^\star\not\le u_S\), the coordinates with \(z^\star_i>u_i\) are clamped to \(u_i\) and the reduced system is re-solved, for at most \(|S|\) rounds.
 \end{lemma}
 \begin{proof}
-\(z^\star\) solves the lower-bounded relaxation, which dominates \(T\) on \([0,u_S]\). If \(z^\star\le u_S\), it is a fixed point of \(T_S\) and, being the least element of \(P\) containing the fixed-point set, equals the box least fixed point. For \(r<1\), \(I-B\) is a nonsingular \(M\)-matrix and the LCP has a unique least solution, found in polynomial time.
+\(z^\star\) solves the lower-bounded relaxation, whose map dominates \(T\) on \([0,u_S]\). Hence the box least fixed point is at most \(z^\star\). If \(z^\star\le u_S\), the box projection is inactive at \(z^\star\), so \(z^\star\) is itself a box fixed point and therefore equals the box least fixed point. For \(r<1\), \(I-B\) is a nonsingular \(M\)-matrix and the LCP has a unique least solution, found in polynomial time.
 \end{proof}
 
 \begin{remark}[relaxation is an upper bound]
@@ -1013,10 +1013,10 @@ If the least element \(z^\star\) of \(P\) exists with \(z^\star\le u_S\), in par
 
 \begin{lemma}[ramp step counts]
 \label{sfbfp:ramp}
-For an irreducible block with \(r\ge1\) whose lower-bounded LP is infeasible, bottom Kleene reaches its first clamp event in \(O(U/\bar\alpha)\le O(U/\delta)\) iterations when \(r=1\) with drift \(\bar\alpha\), unless \(\bar\alpha\le\delta\), in which case the current iterate is already a \(\delta\)-approximate fixed point; and in \(O(\log U/\log r)\) iterations when \(r>1\). Each block contributes at most \(|S|\) clamp events.
+For an irreducible block with \(r\ge1\) whose lower-bounded LP is infeasible, bottom Kleene reaches its first clamp event in \(O(U/\bar\alpha)\le O(U/\delta)\) iterations when \(r=1\), where \(\bar\alpha\) is the asymptotic per-step drift envelope over the peripheral period, unless \(\bar\alpha\le\delta\), in which case the current iterate is already a \(\delta\)-approximate fixed point; and in \(O(\log U/\log r)\) iterations when \(r>1\). Each block contributes at most \(|S|\) clamp events.
 \end{lemma}
 \begin{proof}
-The interior increment is \(d^{(t)}=B^tg\). For \(r=1\), the semisimple peripheral spectrum gives \(\sum_{k<t}B^kg=t\,\bar\alpha\hat v+O(1)\), where \(\hat v\) is the Perron direction, so the ramp advances at rate \(\bar\alpha\) and \(\|d^{(t)}\|_\infty=\bar\alpha+o(1)\). For \(r>1\), the Perron mode dominates and the cap \(U\) is reached after \(O(\log U/\log r)\) steps.
+The interior increment is \(d^{(t)}=B^tg\). For \(r=1\), the semisimple peripheral spectrum gives linear growth of the partial sums along the Perron direction, with a bounded periodic fluctuation when the block is imprimitive. Taking \(\bar\alpha\) as the maximum drift over one peripheral period, the position advances at rate at most a constant-period oscillation around \(t\bar\alpha\hat v\), so a cap is reached after \(O(U/\bar\alpha)\) steps; if this envelope is at most \(\delta\), the residual is already at most \(\delta\). For \(r>1\), the Perron mode dominates and the cap \(U\) is reached after \(O(\log U/\log r)\) steps.
 \end{proof}
 
 \paragraph{Approximation, scoped.}
@@ -1043,7 +1043,7 @@ In the transformed system of Lemma~\ref{lem:nonneg}, \(y=(q,z)\) has box upper b
 
 \begin{definition}[\(\gamma\)-spectral separation]
 \label{sfbfp:sep}
-An instance is \emph{\(\gamma\)-spectrally separated} if every irreducible block \(B=A_{SS}\) arising in the SCC-DAG resolution satisfies \(\rhospec(B)\le1-\gamma\) or \(\rhospec(B)\ge1+\gamma\), unless the lower-bounded relaxation LP for \(B\) is feasible with least element at most \(u_S\), so the block is resolved exactly by the LP with no ramp.
+An instance is \emph{\(\gamma\)-spectrally separated} if every irreducible block \(B=A_{SS}\) that arises during the full recursive SCC-DAG resolution, including every residual subblock created after clamping coordinates to \(0\) or \(u\), satisfies \(\rhospec(B)\le1-\gamma\) or \(\rhospec(B)\ge1+\gamma\), unless the lower-bounded relaxation LP for \(B\) is feasible with least element at most \(u_S\), so the block is resolved exactly by the LP with no ramp.
 \end{definition}
 
 \begin{theorem}[exact polynomial-time solution]
@@ -1051,7 +1051,7 @@ An instance is \emph{\(\gamma\)-spectrally separated} if every irreducible block
 If an instance is \(\gamma\)-spectrally separated with \(\gamma\ge1/\mathrm{poly}(n,L)\), then the exact least fixed point \(y^\ast\) is computable in \(\mathrm{poly}(n,L)\) time, even when the box bounds are exponentially large. No tie-breaking hypothesis is needed.
 \end{theorem}
 \begin{proof}
-Every block is subcritical, LP-bounded, or supercritical with \(r\ge1+\gamma\); none is a critical ramp. Subcritical and LP-bounded blocks are exact in polynomial time. A supercritical block reaches each clamp, or is driven to \(0\) by lower clipping, within \(O(\log U/\log(1+\gamma))=O(L/\gamma)=\mathrm{poly}(n,L)\) bottom-Kleene iterations. The logarithmic dependence on \(U\) gives polynomiality even for \(U=2^L\). After at most \(|S|\) clamps, the active set stabilizes and the interior residual is obtained by one exact linear solve. Simultaneous boundary hits are handled by the clip, so no separation of hitting times is needed.
+Every block encountered by the recursive algorithm is subcritical, LP-bounded, or supercritical with \(r\ge1+\gamma\); none is a critical or barely-supercritical ramp. Subcritical and LP-bounded blocks are exact in polynomial time. A supercritical block reaches its next clamp, or is driven to \(0\) by lower clipping, within \(O(\log U/\log(1+\gamma))=O(L/\gamma)=\mathrm{poly}(n,L)\) bottom-Kleene iterations. After the clamp, the algorithm re-decomposes the residual subblocks, which are covered again by Definition~\ref{sfbfp:sep}. Thus each of the at most \(|S|\) clamp events in the recursive resolution has the same polynomial bound. Once no clamp remains, the interior residual is obtained by one exact linear solve. Simultaneous boundary hits are handled by the clip, so no separation of hitting times is needed.
 \end{proof}
 
 \paragraph{The critical event-jump.}
