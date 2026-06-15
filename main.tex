@@ -69,8 +69,11 @@ where \((A,B)\) denotes collateral \(A\) and debt \(B\). If \(P_1\) is liquidate
 \label{fig:triangle}
 \end{figure}
 
+\paragraph{Positioning relative to monotone clearing.}
+Financial clearing problems often have monotone or lattice structure. Eisenberg--Noe type payment networks are the classical example, and recent work makes the Tarski connection explicit: Besting, Hoefer, and Huth compute extremal Tarski fixed points in generalized financial networks with monotone piecewise-linear payment functions and default costs~\cite{EisenbergNoe2001,BestingHoeferHuth2026}. Fire-sale games also exhibit lattice equilibrium structure under convex price impact~\cite{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}. Our contribution is therefore not the observation that clearing can be phrased as a Tarski fixed point. The contribution is to identify what changes in DeFi liquidation clearing. The map here is not a conservation-based payment allocation; it is a price-impact fixed point in which liquidations change asset prices, and an asset sold as collateral can simultaneously be another borrower's debt asset. This debt-relief channel supplies a negative feedback primitive. We show that the collateral-debt graph determines whether this primitive can be globally aligned into a monotone Tarski/CLS problem or can instead implement SUM/NOT circuits and PPAD-hard fixed-point structure.
+
 \paragraph{Main results.}
-Let \(\GA\) be the asset borrowing graph: its vertices are assets and each position gives an edge between its collateral and debt assets. Our first main result identifies the complexity meaning of bipartiteness.
+Let \(\GA\) be the asset borrowing graph: its vertices are assets and each position gives an edge between its collateral and debt assets. Our first main result identifies when the DeFi liquidation map preserves the Tarski-type structure familiar from monotone clearing.
 \begin{quote}
 \textbf{Sign-balanced side.} If \(\GA\) is bipartite, smooth \(\delta\)-clearing reduces to the succinct Tarski fixed-point problem and belongs to \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). If, in addition, liquidation feedback is small enough to make the transformed map contractive, clearing is unique and computable in polynomial time.
 \end{quote}
@@ -86,10 +89,12 @@ Our negative result gives the other side of the complexity map.
 \end{quote}
 We reduce from generalized circuits with only truncated-SUM and NOT gates, a restricted source problem known to be PPAD-complete for a constant approximation parameter. The NOT gate is implemented by the debt-relief dependency above; truncated-SUM is implemented by co-writers that sell the same output collateral asset. A private three-NOT anchor certifies that the constructed asset graph is non-bipartite. Finally, smooth approximate clearing belongs to PPAD because the map is rational piecewise-linear, all-or-nothing clearing existence belongs to NP, and the balanced all-or-nothing case is polynomial-time solvable by finite monotone iteration.
 
+The paper's contributions can be summarized as follows.
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=3pt]
-\item \emph{Bipartite asset graph:} smooth \(\delta\)-clearing is in CLS via a Tarski reduction; in the small-impact/M-matrix regime it is polynomial-time solvable; balanced all-or-nothing clearing is polynomial-time solvable by finite-lattice iteration.
-\item \emph{General instances:} smooth approximate clearing is in PPAD; all-or-nothing clearing existence is in NP.
-\item \emph{Non-bipartite worst case:} constant-approximate smooth clearing is PPAD-hard. We do not use all-or-nothing hardness as a main theorem.
+\item \emph{DeFi-native model:} a collateral-only liquidation clearing problem with linear price impact, close-factor-compatible sales, and debt relief through asset-denominated liabilities.
+\item \emph{Sign-balance criterion:} bipartite asset borrowing graphs yield subtraction-free monotone clipped-affine fixed points, hence CLS membership for smooth approximate clearing.
+\item \emph{Two-dimensional complexity map:} small feedback gain gives contraction and polynomial-time computation, while large-impact bipartite clearing remains open.
+\item \emph{Hardness primitive:} non-bipartite collateral-debt cycles implement NOT, and SUM/NOT generalized circuits give constant-\(\delta\) PPAD-hardness in the large-impact worst case.
 \end{itemize}
 
 \begin{table}[t]
@@ -107,7 +112,7 @@ Large impact & in CLS via Tarski; P open & constant-\(\delta\) PPAD-hard in wors
 \end{table}
 
 \paragraph{Relation to prior work.}
-The closest complexity-theoretic antecedent is the PPAD-completeness of clearing with credit default swaps~\cite{SchuldenzuckerSeukenBattiston2017}. Our nonmonotonicity is different. CDS hardness arises from default-contingent payments. Here, the primitive is collateral-sale price impact and debt relief in multi-asset borrowing. The tractable side is also structural: bipartiteness induces a monotone Tarski instance, placing approximate clearing in CLS, and becomes polynomial-time solvable under a small-impact contraction condition. Our results therefore separate a sign-balanced CLS regime from a non-bipartite PPAD-hard worst-case regime within a DeFi-native liquidation model.
+Prior work establishes Tarski/lattice structure, and in some settings polynomial algorithms, for conservation-like payment networks and strategic fire-sale models~\cite{BestingHoeferHuth2026,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}. We use these models as a foil. Our question is which DeFi network structures preserve Tarski-type monotonicity and which structures destroy it strongly enough to encode PPAD-hard fixed points. Credit-default-swap clearing hardness is another important antecedent~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}, but its nonmonotonicity comes from default-contingent derivative payments. Here, the NOT primitive comes from collateral-only liquidation lowering the price of another position's debt asset.
 
 \paragraph{What the dichotomy does and does not say.}
 The hardness theorem is a worst-case statement outside the balanced class. It does not say that every non-bipartite instance is hard. If price impact is sufficiently small, the clearing map may be a contraction even on a non-bipartite graph. The correct interpretation is structural: bipartiteness gives an order-preserving Tarski structure and CLS membership, while non-bipartite networks can encode PPAD-hard fixed-point structure when price impact is large enough.
@@ -266,7 +271,7 @@ The transformed equations also have a useful complementarity interpretation. Let
 The base matrix \(B\) is a Z-matrix, since \(A\ge0\). The naive standard-LCP embedding of \eqref{eq:ub-lcp} has a \(+I\) block and is not itself a Z-matrix LCP; the bounded form is the correct structural statement. We use this complementarity view to explain the sign-balanced structure, but our polynomial-time claim is restricted to the contraction/M-matrix regime of Proposition~\ref{prop:smallimpact}.
 
 \begin{remark}
-The large-impact bipartite regime is an interesting open case. The transform places it in the Tarski/CLS world and gives the upper-bounded Z-matrix structure above, but we do not claim a polynomial-time algorithm for arbitrary \(\rho(A)\ge1\).
+The large-impact bipartite regime is an interesting open case. The transform places it in the Tarski/CLS world and gives the upper-bounded Z-matrix structure above, but we do not claim a polynomial-time algorithm for arbitrary \(\rho(A)\ge1\). This does not contradict polynomial algorithms for monotone payment-network clearing~\cite{BestingHoeferHuth2026}. Those algorithms exploit payment-network structure such as no-overpayment/no-fraud constraints and conservation-like flow or circulation properties. The transformed DeFi map is monotone and piecewise-linear, but it is a price-impact liquidation map rather than a payment allocation map; its feedback matrix need not be substochastic or conservative, and in the large-impact regime it may have spectral radius at least one. In the small-impact regime where this feedback becomes contractive, Proposition~\ref{prop:smallimpact} recovers polynomial-time computation.
 \end{remark}
 
 \section{Membership and All-or-Nothing Clearing}
@@ -358,19 +363,45 @@ The quantifiers in Theorem~\ref{thm:hardness} are worst-case. We do not claim th
 
 \section{Related Work and Discussion}
 \label{sec:discussion}
-\paragraph{Financial-network clearing and PPAD.}
-Eisenberg and Noe~\cite{EisenbergNoe2001} gave the classical monotone clearing model, and Rogers and Veraart~\cite{RogersVeraart2013} studied default costs. Schuldenzucker, Seuken, and Battiston~\cite{SchuldenzuckerSeukenBattiston2017} showed PPAD-completeness with credit default swaps. Our primitive is different: nonmonotonicity comes from collateral-sale price impact and debt relief, not from default-contingent CDS payments. On the positive side, the same signed graph that explains this economic feedback determines when the clearing map becomes a monotone Tarski instance in CLS, and when small impact makes it a contraction.
+\paragraph{Financial clearing as Tarski fixed points.}
+Eisenberg and Noe~\cite{EisenbergNoe2001} gave the classical monotone clearing model, and Rogers and Veraart~\cite{RogersVeraart2013} studied default costs. Recent work has made the Tarski viewpoint explicit. Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} compute extremal Tarski fixed points in generalized Eisenberg--Noe networks with monotone piecewise-linear payment functions and default costs, obtaining a strongly polynomial algorithm for minimal clearing and a polynomial algorithm for maximal clearing. This line is the right foil for our positive result. Their model remains a payment-network model with no-overpayment/no-fraud style constraints and conservation-like structure. Our transformed bipartite map is monotone and piecewise-linear, but it is generated by price impact and health-factor liquidation. It can have super-unit feedback gain and need not satisfy the substochastic or circulation structure used by payment-network algorithms. Thus the unconditional conclusion on the sign-balanced side is CLS/Tarski membership; polynomial-time computation follows under the separate small-impact condition.
+
+\paragraph{Fire sales and lattice equilibria.}
+Fire-sale models also connect price impact with lattice structure. Bertschinger et al.~\cite{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023} study strategic fire-sale games and show that, for a broad range of price-impact functions such as convex impact, equilibria exist and form a complete lattice; they also analyze best-response convergence and cycling. Their setting is a strategic portfolio liquidation game. Ours is a DeFi lending clearing problem with collateral/debt roles, health-factor thresholds, and a graph-theoretic sign condition. We use Tarski structure only on the sign-balanced side, and we show that odd collateral-debt cycles can implement PPAD-hard SUM/NOT fixed-point structure.
+
+\paragraph{CDS hardness and DeFi lending.}
+Schuldenzucker, Seuken, and Battiston~\cite{SchuldenzuckerSeukenBattiston2017} showed PPAD-completeness of financial-network clearing with credit default swaps; Dohn, Hansen, and Klinkby~\cite{DohnHansenKlinkby2024} sharpened this hardness line and studied additional decision problems. These results show that derivative-based clearing has a rich PPAD/FIXP hardness theory. Our hardness uses no CDS, no default-contingent derivative payments, and no debt-side buy pressure. The NOT primitive is produced by collateral-only liquidation lowering the price of another position's debt asset. On the DeFi side, empirical and theoretical work documents liquidations, price impact, and systemic fragility~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025}; Bartoletti and Lipparini~\cite{BartolettiLipparini2025} give a formal model of DeFi lending protocols and their incentive mechanisms. We complement this literature by isolating the fixed-point clearing problem created by price-impact liquidation feedback.
 
 \paragraph{DeFi interpretation and limitations.}
-Empirical and theoretical work documents DeFi liquidations, price impact, and systemic fragility~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025}. We complement that literature by studying the fixed-point clearing problem created by liquidation feedback. The model is a linear price-impact abstraction for aggregate liquidation pressure; constant-product AMMs and multi-pool routing are nonlinear and path-dependent. Extending the exact CLS/Tarski formulation or the gadget proof to those AMM models is open. The hardness theorem is worst-case: small-impact non-bipartite instances may still be contractions and easy.
+The model is a linear price-impact abstraction for aggregate liquidation pressure; constant-product AMMs and multi-pool routing are nonlinear and path-dependent. Extending the exact CLS/Tarski formulation or the gadget proof to those AMM models is open. The hardness theorem is worst-case: small-impact non-bipartite instances may still be contractions and easy.
 
 \paragraph{Open complexity of the balanced large-impact case.}
-The sign-balanced map is subtraction-free, monotone, and clipped-affine: it aggregates nonnegative weighted inputs and clips against constants, but lacks a primitive for comparing two variables. Known hard Tarski constructions typically use min/max or comparison primitives, which appear to require subtraction or anti-monotone dependence. Thus we leave the polynomial-time status, or finer complexity classification, of large-impact sign-balanced clearing as an open problem.
+The sign-balanced map is subtraction-free, monotone, and clipped-affine: it aggregates nonnegative weighted inputs and clips against constants, but lacks a primitive for comparing two variables. Known hard Tarski constructions typically use min/max or comparison primitives, which appear to require subtraction or anti-monotone dependence. At the same time, payment-network algorithms for monotone piecewise-linear clearing rely on conservation-like structure absent from large-impact price-impact liquidation. Thus we leave the polynomial-time status, or finer complexity classification, of large-impact sign-balanced clearing as an open problem.
 
 \paragraph{Conclusion.}
 Collateral-only DeFi liquidation creates a native source of nonmonotone clearing feedback. Bipartite sign-balance gives a monotone Tarski instance in CLS and a polynomial-time contraction problem under small impact; removing sign-balance enables SUM/NOT circuits and yields constant-approximation PPAD-hardness.
 
-\begin{thebibliography}{10}
+\begin{thebibliography}{99}
+
+\bibitem{BestingHoeferHuth2026}
+Besting, L., Hoefer, M., Huth, L.:
+Computing Tarski fixed points in financial networks.
+arXiv:2602.16387 (2026). \url{https://arxiv.org/abs/2602.16387}
+
+\bibitem{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}
+Bertschinger, N., Hoefer, M., Krogmann, S., Lenzner, P., Schuldenzucker, S., Wilhelmi, L.:
+Equilibria and convergence in fire sale games.
+arXiv:2206.14429 (2023). \url{https://arxiv.org/abs/2206.14429}
+
+\bibitem{BartolettiLipparini2025}
+Bartoletti, M., Lipparini, E.:
+A theory of lending protocols in DeFi.
+arXiv:2506.15295 (2025). \url{https://arxiv.org/abs/2506.15295}
+
+\bibitem{DohnHansenKlinkby2024}
+Dohn, S., Hansen, K.A., Klinkby, A.:
+Improved hardness results for the clearing problem in financial networks with credit default swaps.
+arXiv:2409.18717 (2024). \url{https://arxiv.org/abs/2409.18717}
 
 \bibitem{FilosRatsikas2023}
 Filos-Ratsikas, A., Giannakopoulos, Y., Hollender, A., Lazos, P., Po\c{c}as, D.:
