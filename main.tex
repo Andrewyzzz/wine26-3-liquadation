@@ -3,6 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{graphicx}
+\usepackage{array}
 \usepackage{booktabs}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning}
@@ -23,6 +24,7 @@
 \newcommand{\SAT}{\mathsf{SAT}}
 \newcommand{\NP}{\mathrm{NP}}
 \newcommand{\cf}{\varphi}
+\newcommand{\rhospec}{\rho}
 \DeclareMathOperator{\SOL}{SOL}
 
 \begin{document}
@@ -163,7 +165,7 @@ where \(P\) and \(X\) denote the right-hand sides of \eqref{eq:price} and the li
 
 All parameters in the input are rational numbers encoded in binary. The computational problems ask for a \(\delta\)-approximate clearing for a rational approximation parameter \(\delta\); in the contraction regimes below, exact or high-precision approximate clearings can be obtained by iteration. In the hardness theorem, \(\delta\) is a fixed positive constant determined by the source generalized-circuit hardness constant and by the constant error amplification of the gadgets. The price clipping bounds \(M_k\) are part of the input; in the reduction they are constants.
 
-We use two graphs. The asset borrowing graph \(\GA\) has assets as vertices and an undirected edge \(\{a_i,b_i\}\) for each position. This is the graph used in the tractability and hardness statements. The position signed graph \(\GX\) has positions as vertices; it has a positive directed edge \(j\to i\) when \(a_j=a_i\), and a negative directed edge \(j\to i\) when \(a_j=b_i\). The second graph is diagnostic: it explains local liquidation feedback and the gadgets.
+We use two graphs. The asset borrowing graph \(\GA\) has assets as vertices and an undirected edge \(\{a_i,b_i\}\) for each position. This is the graph used in the tractability and hardness statements. The position signed coupling graph \(\GX\), formalized in Definition~\ref{def:signedcoupling}, has positions as vertices, a positive edge between \(i,j\) when \(a_i=a_j\), and a negative edge when \(a_i=b_j\) or \(a_j=b_i\). For local intuition we also read it directionally: a positive arc \(j\to i\) when \(a_j=a_i\), and a negative arc \(j\to i\) when \(a_j=b_i\). Balance is a property of the undirected graph.
 
 \paragraph{Economic meaning of bipartiteness.}
 Bipartiteness should not be read as an arbitrary coloring condition. It says that assets can be separated into two sectors and all borrowing positions cross the sector boundary. A motivating special case is a market in which one sector contains volatile collateral-like assets and the other contains stable or debt-like assets, with positions of the form ``deposit volatile, borrow stable'' and ``deposit stable, borrow volatile.'' The theorem does not require this interpretation, but it explains why bipartiteness is economically meaningful: it rules out odd cycles in which an asset returns with the opposite collateral/debt role, the source of the debt-relief negative feedback in Fig.~\ref{fig:triangle}.
@@ -514,6 +516,8 @@ The large-impact sign-balanced regime is governed by the following abstract prob
 \]
 We call this the \emph{Subtraction-Free Box Fixed Point} problem. It is equivalent, via Lemma~\ref{lem:gauge}, to the balanced SUM/NOT fragment and, via Theorem~\ref{thm:balancedCLS}, to the transformed sign-balanced DeFi clearing problem. Its box-LCP base is a Z-matrix; when \(\rho(A)<1\) it is an M-matrix/P-matrix case and Proposition~\ref{prop:smallimpact} gives polynomial-time computation. For \(\rho(A)\ge1\), the upper bound is the obstruction: the naive standard-LCP embedding introduces a positive \(+I\) block and leaves the Z-matrix world. Appendix~\ref{app:subtractionfree} records a structural lemma and an EOPL-style attack route, but we leave the exact complexity of the large-impact sign-balanced case open.
 
+Two partial results narrow this gap (Appendix~\ref{app:sfbfp}): under \(\gamma\)-spectral separation of every active SCC, the \emph{exact} least clearing is computable in polynomial time (Theorem~\ref{sfbfp:exact}); and when the price caps \(M_k\), impact products \(s_k\alpha_i\), and inverse smoothing widths \(\theta_iD_i/\varepsilon_i,\,C_i/\varepsilon_i\) are polynomially bounded, an inverse-polynomial-accuracy \(\delta\)-clearing is computable in polynomial time (Proposition~\ref{sfbfp:approx}). The unconditional large-impact case remains open; it reduces to an irreducible critical SCC (\(\rho=1\)) with positive drift.
+
 \begin{table}[t]
 \centering
 \caption{Summary of the final frontier. The hard cells are worst-case; the small-impact guarantees are sufficient conditions.}
@@ -830,6 +834,7 @@ We additionally validated the gadget truth tables and the rank-one realizability
 This optional structural appendix mirrors the smooth SUM/NOT parity lemma. It is not needed for Theorem~\ref{thm:discreteNP}; its role is to show that in the discrete construction, imbalance is localized to the gated odd-NOT ring.
 
 \begin{definition}[signed coupling graph]
+\label{def:signedcoupling}
 This is the undirected symmetrization of the diagnostic position graph from Section~\ref{sec:model}. The vertices of \(\GX\) are positions. For \(i\ne j\), add a positive edge when \(a_i=a_j\) and a negative edge when \(a_i=b_j\) or \(a_j=b_i\). Sharing only a debt asset induces no edge.
 \end{definition}
 
@@ -851,10 +856,10 @@ Let \(\sigma_i\) be a balancing gauge. For each priced asset \(k\), color it by 
 
 \begin{theorem}[localized frustration]
 \label{thm:local}
-In \(I_\phi\), deleting the three ring positions \(R_1,R_2,R_3\) leaves a balanced signed coupling graph and a bipartite asset graph. The imbalance is localized to the gated-ring block: \(R_1,R_2,R_3\) form an odd-NOT triangle, while the controller \(W\) has the side-couplings needed to gate \(R_1\) and attaches that block to the SAT circuit. In \(\GA(I_\phi)\), the triangle \(a_1-a_2-a_3-a_1\) is the unique odd cycle of the ring block, and the edge \(\{a_1,\sigma_{\overline{\SAT}}\}\) connects it to the feed-forward component.
+In \(I_\phi\), deleting the three ring positions \(R_1,R_2,R_3\) leaves a balanced signed coupling graph and a bipartite asset graph. The imbalance is localized to the gated-ring block: \(R_1,R_2,R_3\) form an odd-NOT triangle, while the controller \(W\) has the side-couplings needed to gate \(R_1\) and attaches that block to the SAT circuit. In \(\GA(I_\phi)\), \(W\) contributes only the asset edge \(\{a_1,\sigma_{\overline{\SAT}}\}\); the triangle \(a_1-a_2-a_3-a_1\) is the unique odd cycle of the ring block, and \(\{a_1,\sigma_{\overline{\SAT}}\}\) connects it to the feed-forward component.
 \end{theorem}
 \begin{proof}
-The feed-forward gate library is acyclic in the Boolean sense and can be assigned the layer-parity gauge: cross-layer debt-read edges are negative and same-bus shared-collateral edges are positive. Lemma~\ref{lem:fwd} gives the matching bipartite coloring of its asset graph. The ring contributes the three negative edges \(R_1R_2,R_2R_3,R_3R_1\), producing a negative 3-cycle. The controller contributes a positive shared-collateral edge \(WR_1\), the negative side-coupling \(WR_2\) because \(W\)'s collateral asset \(a_1\) is \(R_2\)'s debt asset, and a debt-read attachment to the SAT component. Removing \(R_1,R_2,R_3\) removes the ring obstruction and the \(WR_1,WR_2\) side-couplings; keeping them preserves the asset triangle \(a_1-a_2-a_3-a_1\).
+The feed-forward gate library is acyclic in the Boolean sense and can be assigned the layer-parity gauge: cross-layer debt-read edges are negative and same-bus shared-collateral edges are positive. Lemma~\ref{lem:fwd} gives the matching bipartite coloring of its asset graph. In \(\GX\), the ring contributes the three negative edges \(R_1R_2,R_2R_3,R_3R_1\), producing a negative 3-cycle. The controller contributes a positive shared-collateral edge \(WR_1\), the negative side-coupling \(WR_2\) because \(W\)'s collateral asset \(a_1\) is \(R_2\)'s debt asset, and a negative debt-read attachment to the writer of \(\sigma_{\overline{\SAT}}\) in the SAT component. Removing \(R_1,R_2,R_3\) removes the ring obstruction and the \(WR_1,WR_2\) side-couplings; the remaining controller attachment is part of the feed-forward balanced component. In \(\GA\), the controller contributes only \(\{a_1,\sigma_{\overline{\SAT}}\}\), which attaches the ring asset triangle to the feed-forward component without adding a second odd cycle inside the ring block.
 \end{proof}
 
 \section{Gadget Algebra and Error Bounds}
@@ -943,5 +948,137 @@ The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\ma
 
 \paragraph{Open problem.}
 We leave open the exact complexity of large-impact sign-balanced clearing, equivalently of the Subtraction-Free Box Fixed Point problem, equivalently of the balanced SUM/NOT fragment: whether it is in P, in an EOPL-style subclass, or strictly between, for both exact and \(\delta\)-approximate clearing.
+
+\section{Subtraction-Free Box Fixed Points: An Algorithmic Refinement}
+\label{app:sfbfp}
+
+We refine the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendix~\ref{app:zmatrix}, isolating the single source of difficulty in the large-impact \((\rhospec(A)\ge1)\) regime. Let \(y^\ast\) be its least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the interior spectral bound: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})\le1\) by Lemma~\ref{lem:nonexp}.
+
+\paragraph{SCC-DAG decomposition.}
+Form the dependency digraph with arc \(i\to j\) iff \(A_{ij}\ne0\). Let \(C_1,\dots,C_m\) be its strongly connected components, ordered so that whenever \(C_b\) reads \(C_a\) we have \(a<b\).
+
+\begin{lemma}[topological resolution]
+\label{sfbfp:scc}
+\(y^\ast_{C_a}\) is the least fixed point of
+\[
+        T_a(z)=\clip_{[0,u_{C_a}]}(A_{C_aC_a}z+g_a),
+        \qquad
+        g_a=c_{C_a}+\sum_{b<a}A_{C_aC_b}y^\ast_{C_b},
+\]
+where \(g_a\) is fixed by upstream blocks.
+\end{lemma}
+\begin{proof}
+\(C_a\) reads only \(C_a\) and components it depends on, among \(C_1,\dots,C_{a-1}\). Thus \(y^\ast_{C_a}\) is a fixed point of \(T_a\). Minimality follows by induction, since the global bottom Kleene orbit restricted to \(C_a\) is the orbit of \(T_a\) once upstream has converged.
+\end{proof}
+
+A Jordan block of \(A\) at the unit circle can arise only from coupling \emph{between} critical SCCs, and is linearized away by resolving each upstream critical SCC to its constant limit. Within each \(C_a\), the matrix \(A_{C_aC_a}\) is irreducible, so its peripheral spectrum is \(\rhospec\) times roots of unity and semisimple.
+
+\begin{lemma}[residual locality]
+\label{sfbfp:resid}
+For any \(y\in[0,u]\) assembled block by block in topological order,
+\[
+        \|T(y)-y\|_\infty
+        =\max_a\|T_a(y_{C_a})-y_{C_a}\|_\infty,
+\]
+with each \(T_a\) using the stored upstream values. Hence resolving every block's sub-map to residual at most \(\delta\) yields global residual at most \(\delta\).
+\end{lemma}
+\begin{proof}
+For \(i\in C_a\), \((Ay+c)_i=(A_{C_aC_a}y_{C_a}+g_a)_i\) with \(g_a\) formed from the stored upstream values, so \(T(y)_i=T_a(y_{C_a})_i\).
+\end{proof}
+
+\begin{remark}
+Lemma~\ref{sfbfp:resid} concerns the residual \(\|T(y)-y\|\), the clearing accuracy of interest. Approximating \(y^\ast\) in value would require a Lipschitz propagation bound and per-block accuracy depending on downstream gains; we do not need it.
+\end{remark}
+
+\paragraph{Per-block taxonomy.}
+It suffices to solve one irreducible block \(z=\clip_{[0,u_S]}(Bz+g)\), \(B=A_{SS}\ge0\), with \(r=\rhospec(B)\).
+
+\begin{lemma}[LP detects divergence]
+\label{sfbfp:lp}
+For any \(B\ge0\), the polyhedron \(P=\{z\ge0:(I-B)z\ge g\}\) is closed under coordinate-wise minimum. If \(P\ne\emptyset\), it has a least element, returned by minimizing \(\mathbf 1^\top z\) over \(P\). Moreover, \(P=\emptyset\) iff the lower-bounded relaxation \(z=\max(Bz+g,0)\) diverges to \(+\infty\).
+\end{lemma}
+
+\begin{lemma}[subcritical and LP-bounded blocks are exact]
+\label{sfbfp:sub}
+If the least element \(z^\star\) of \(P\) exists with \(z^\star\le u_S\), in particular when \(r<1\) or when \(r=1\) with nonpositive critical drift, then \(z^\star\) is the exact box fixed point, computed in \(\mathrm{poly}(|S|,L)\) time by the LP of Lemma~\ref{sfbfp:lp}. If \(z^\star\not\le u_S\), the coordinates with \(z^\star_i>u_i\) are clamped to \(u_i\) and the reduced system is re-solved, for at most \(|S|\) rounds.
+\end{lemma}
+\begin{proof}
+\(z^\star\) solves the lower-bounded relaxation, which dominates \(T\) on \([0,u_S]\). If \(z^\star\le u_S\), it is a fixed point of \(T_S\) and, being the least element of \(P\) containing the fixed-point set, equals the box least fixed point. For \(r<1\), \(I-B\) is a nonsingular \(M\)-matrix and the LCP has a unique least solution, found in polynomial time.
+\end{proof}
+
+\begin{remark}[relaxation is an upper bound]
+\label{sfbfp:upper}
+\(P\) drops the box, so its least element dominates \(y^\ast_S\). Thus ``the relaxation diverges'' does not imply that the box system diverges to \(u\): a supercritical block can settle finitely when a coordinate clips to \(0\), breaking the feedback. This is why each block is resolved inside its own box.
+\end{remark}
+
+\begin{lemma}[ramp step counts]
+\label{sfbfp:ramp}
+For an irreducible block with \(r\ge1\) whose lower-bounded LP is infeasible, bottom Kleene reaches its first clamp event in \(O(U/\bar\alpha)\le O(U/\delta)\) iterations when \(r=1\) with drift \(\bar\alpha\), unless \(\bar\alpha\le\delta\), in which case the current iterate is already a \(\delta\)-approximate fixed point; and in \(O(\log U/\log r)\) iterations when \(r>1\). Each block contributes at most \(|S|\) clamp events.
+\end{lemma}
+\begin{proof}
+The interior increment is \(d^{(t)}=B^tg\). For \(r=1\), the semisimple peripheral spectrum gives \(\sum_{k<t}B^kg=t\,\bar\alpha\hat v+O(1)\), where \(\hat v\) is the Perron direction, so the ramp advances at rate \(\bar\alpha\) and \(\|d^{(t)}\|_\infty=\bar\alpha+o(1)\). For \(r>1\), the Perron mode dominates and the cap \(U\) is reached after \(O(\log U/\log r)\) steps.
+\end{proof}
+
+\paragraph{Approximation, scoped.}
+
+\begin{proposition}[\(\delta\)-approximate least fixed point]
+\label{sfbfp:approx}
+Resolving blocks in topological order, using Lemma~\ref{sfbfp:sub} for subcritical or LP-bounded blocks and bottom Kleene with Lemma~\ref{sfbfp:ramp} for ramping blocks, returns a \(\delta\)-approximate fixed point in time
+\[
+        O\!\left(n^2\left(nU/\delta+n\log U/\log r_{\min}\right)\right)
+        =\mathrm{poly}(n,L,\|A\|_\infty,U,1/\delta).
+\]
+Consequently, for normalized, polynomially bounded instances with \(U,\|A\|_\infty=\mathrm{poly}(n,L)\) and \(\delta\ge1/\mathrm{poly}(n,L)\), the running time is polynomial. For arbitrary \(A\ge0,c,u,\delta\), the algorithm is pseudo-polynomial: polynomial in \(n,L,\|A\|_\infty,U,1/\delta\).
+\end{proposition}
+\begin{proof}
+By Lemma~\ref{sfbfp:resid}, the global residual is the maximum per-block residual. Subcritical or LP-bounded blocks have residual \(0\). A ramping block either has increment \(\bar\alpha\le\delta\) or reaches a clamp within the count of Lemma~\ref{sfbfp:ramp}, after which it is re-decomposed. Iterating leaves every block with residual at most \(\delta\). The time bound follows from at most \(|S|\) clamps per block over at most \(n\) blocks, each preceded by \(O(U/\delta)\) or \(O(\log U/\log r)\) iterations of cost \(O(n^2)\).
+\end{proof}
+
+\begin{corollary}[approximate clearing for balanced large-impact markets]
+\label{sfbfp:clearing}
+In the transformed system of Lemma~\ref{lem:nonneg}, \(y=(q,z)\) has box upper bounds \(M_k\) on prices and \(1\) on liquidations, and \(A\) has off-diagonal entries \(s_k\alpha_i\) in the price block and \(\theta_iD_i/\varepsilon_i, C_i/\varepsilon_i\) in the liquidation block. Hence \(U=\max_kM_k\) and \(\|A\|_\infty\) may be exponentially large binary rationals. For instances in which the price caps \(M_k\), impact products \(s_k\alpha_i\), and inverse smoothing widths \(\theta_iD_i/\varepsilon_i, C_i/\varepsilon_i\) are polynomially bounded, a \(\delta\)-clearing is computable in polynomial time for inverse-polynomial \(\delta\). In general the algorithm is pseudo-polynomial in these magnitudes and \(1/\delta\).
+\end{corollary}
+
+\paragraph{Exact solution under spectral separation.}
+
+\begin{definition}[\(\gamma\)-spectral separation]
+\label{sfbfp:sep}
+An instance is \emph{\(\gamma\)-spectrally separated} if every irreducible block \(B=A_{SS}\) arising in the SCC-DAG resolution satisfies \(\rhospec(B)\le1-\gamma\) or \(\rhospec(B)\ge1+\gamma\), unless the lower-bounded relaxation LP for \(B\) is feasible with least element at most \(u_S\), so the block is resolved exactly by the LP with no ramp.
+\end{definition}
+
+\begin{theorem}[exact polynomial-time solution]
+\label{sfbfp:exact}
+If an instance is \(\gamma\)-spectrally separated with \(\gamma\ge1/\mathrm{poly}(n,L)\), then the exact least fixed point \(y^\ast\) is computable in \(\mathrm{poly}(n,L)\) time, even when the box bounds are exponentially large. No tie-breaking hypothesis is needed.
+\end{theorem}
+\begin{proof}
+Every block is subcritical, LP-bounded, or supercritical with \(r\ge1+\gamma\); none is a critical ramp. Subcritical and LP-bounded blocks are exact in polynomial time. A supercritical block reaches each clamp, or is driven to \(0\) by lower clipping, within \(O(\log U/\log(1+\gamma))=O(L/\gamma)=\mathrm{poly}(n,L)\) bottom-Kleene iterations. The logarithmic dependence on \(U\) gives polynomiality even for \(U=2^L\). After at most \(|S|\) clamps, the active set stabilizes and the interior residual is obtained by one exact linear solve. Simultaneous boundary hits are handled by the clip, so no separation of hitting times is needed.
+\end{proof}
+
+\paragraph{The critical event-jump.}
+The sole obstruction to bit-length polynomiality in Proposition~\ref{sfbfp:approx} and to dropping separation in Theorem~\ref{sfbfp:exact} is one subcase: an irreducible block with \(\rhospec=1\) and positive drift ramping to its box.
+
+\begin{proposition}[null-vector ramp event, proven special case]
+\label{sfbfp:jump}
+Let \(B\ge0\) be irreducible with \(\rhospec(B)=1\), constant input \(g\), and suppose the block ramps, i.e., the LP of Lemma~\ref{sfbfp:lp} is infeasible. Let \(v>0\) be the positive right null vector of \(B-I\). Then the bottom Kleene orbit advances along \(v\), and, when \(B\) is primitive or the headroom ratios are separated by \(\min_{i\ne j}|u_i/v_i-u_j/v_j|\ge2^{-\mathrm{poly}(n,L)}\), the first coordinate to reach its cap is \(j=\arg\min_i u_i/v_i\), independently of the drift magnitude. Clamping \(j\) and recursing terminates in at most \(|S|\) events, each a null-vector plus a ratio test, in \(\mathrm{poly}(|S|,L)\) time with no dependence on \(U\) or the drift.
+\end{proposition}
+
+\noindent\emph{Status.}
+An unconditional event-jump still requires period-\(h\) phase alignment for near-tie boundary events, rational bit-complexity of the null-vector and ratio computations, and the post-clamp residual when the reduced block is supercritical. These remain empirically passing but not used to support any theorem above.
+
+\paragraph{Refinement of the complexity map.}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.50\linewidth} l}
+\hline
+\textbf{Regime (smooth model)} & \textbf{Result}\\
+\hline
+sign-balanced & in \(\mathrm{CLS}\)\\
+sign-balanced \(+\) small impact \((\rhospec(A)<1)\) & \(\mathrm{P}\)\\
+sign-balanced \(+\) \(\gamma\)-spectral separation & exact \(\mathrm{P}\) (Thm.~\ref{sfbfp:exact})\\
+sign-balanced, bounded caps/impact/\(1/\varepsilon\), inverse-poly \(\delta\) & poly-time \(\delta\)-approx (Prop.~\ref{sfbfp:approx})\\
+non-bipartite, large impact & PPAD-hard\\
+\hline
+\end{tabular}
+\end{center}
 
 \end{document}
