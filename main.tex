@@ -35,7 +35,7 @@
 \begin{abstract}
 Liquidations in DeFi lending protocols are interdependent: selling collateral moves prices, which can trigger or suppress other liquidations. We study a collateral-only liquidation model with linear price impact, in which liquidators repay debt externally and only collateral sales move market prices. Even in this conservative mechanism, clearing can be nonmonotone: when an asset sold as collateral is also used as another position's debt asset, its price decline reduces that borrower's debt burden.
 
-We show that sign-balance has a precise complexity-theoretic meaning. If the asset borrowing graph is bipartite, then after flipping one side of the asset prices and complementing liquidation variables on one side, the smooth clearing equations become a subtraction-free monotone clipped-affine system. Approximate clearing in this sign-balanced regime reduces to the succinct Tarski fixed-point problem and therefore lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). In the small-impact regime, the same system is a contraction and clearing is computable in polynomial time. Conversely, once sign-balance is removed, non-bipartite instances can implement a NOT primitive, encode SUM/NOT generalized circuits, and finding even a constant-approximate clearing is PPAD-hard. Smooth approximate clearing is in PPAD, and all-or-nothing clearing is in NP with a polynomial-time balanced case.
+We show that sign-balance has a precise complexity-theoretic meaning. If the asset borrowing graph is bipartite, then after flipping one side of the asset prices and complementing liquidation variables on one side, the smooth clearing equations become a subtraction-free monotone clipped-affine system. Approximate clearing in this sign-balanced regime reduces to the succinct Tarski fixed-point problem and therefore lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). In the small-impact regime, the same system is a contraction and clearing is computable in polynomial time. Conversely, once sign-balance is removed, non-bipartite instances can implement a NOT primitive, encode SUM/NOT generalized circuits, and finding even a constant-approximate clearing is PPAD-hard. Smooth approximate clearing is in PPAD. In the all-or-nothing model, the balanced case is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
@@ -539,7 +539,7 @@ SIAM Journal on Computing \textbf{52}(1), 80--131 (2023). \doi{10.1137/21M143582
 \bibitem{Budish2023}
 Budish, E., Gao, R., Othman, A., Rubinstein, A., Zhang, Q.:
 Practical algorithms and experimentally validated incentives for equilibrium-based fair division (A-CEEI).
-In: Proceedings of the 24th ACM Conference on Economics and Computation (EC), pp. 689--689. ACM (2023). \doi{10.1145/3580507.3597809}
+arXiv:2305.11406 (2023). \url{https://arxiv.org/abs/2305.11406}
 
 
 
@@ -656,7 +656,7 @@ W_{ij}=
 \]
 The positive terms are shared-collateral effects, and the negative terms are debt-relief reads. The self-coupling \(W_{ii}=C_is_{a_i}\alpha_i\) is positive.
 
-\begin{lemma}[rank-one positive blocks]
+\begin{lemma}[rank-one positive blocks, restating Remark~\ref{rem:rankone}]
 \label{lem:rankone}
 If positions \(i\) and \(j\) share a collateral asset \(a\), then
 \[
@@ -792,7 +792,7 @@ The asset borrowing graph \(\GA(I_\phi)\) contains the odd triangle \(a_1-a_2-a_
 The three NOTs in the ring give the edges \(\{a_1,a_2\}\), \(\{a_2,a_3\}\), and \(\{a_3,a_1\}\). The controller \(W=(a_1;\sigma_{\overline{\SAT}})\) adds \(\{a_1,\sigma_{\overline{\SAT}}\}\). The SAT circuit is connected to \(\sigma_{\overline{\SAT}}\) by construction. Adding edges to a graph containing an odd cycle preserves non-bipartiteness.
 \end{proof}
 
-\begin{theorem}
+\begin{theorem}[Theorem~\ref{thm:discreteNP}, restated]
 \label{thm:discreteAppendix}
 All-or-nothing clearing existence is NP-complete under the restrictions stated in Theorem~\ref{thm:discreteNP}. If the signed coupling graph is balanced, a clearing can be found in polynomial time as in Proposition~\ref{prop:aonNPbalanced}.
 \end{theorem}
@@ -809,7 +809,7 @@ We additionally validated the gadget truth tables and the rank-one realizability
 This optional structural appendix mirrors the smooth SUM/NOT parity lemma. It is not needed for Theorem~\ref{thm:discreteNP}; its role is to show that in the discrete construction, imbalance is localized to the gated odd-NOT ring.
 
 \begin{definition}[signed coupling graph]
-The vertices of \(\GX\) are positions. For \(i\ne j\), add a positive edge when \(a_i=a_j\) and a negative edge when \(a_i=b_j\) or \(a_j=b_i\). Sharing only a debt asset induces no edge.
+This is the undirected symmetrization of the diagnostic position graph from Section~\ref{sec:model}. The vertices of \(\GX\) are positions. For \(i\ne j\), add a positive edge when \(a_i=a_j\) and a negative edge when \(a_i=b_j\) or \(a_j=b_i\). Sharing only a debt asset induces no edge.
 \end{definition}
 
 \begin{lemma}[bipartite implies balanced]
@@ -830,10 +830,10 @@ Let \(\sigma_i\) be a balancing gauge. For each priced asset \(k\), color it by 
 
 \begin{theorem}[localized frustration]
 \label{thm:local}
-In \(I_\phi\), deleting the three ring positions \(R_1,R_2,R_3\) leaves a balanced signed coupling graph and a bipartite asset graph. The imbalance is localized to the gated-ring block: \(R_1,R_2,R_3\) form an odd-NOT triangle, while the controller \(W\) attaches that block to the SAT circuit without removing the odd cycle. In \(\GA(I_\phi)\), the triangle \(a_1-a_2-a_3-a_1\) is the unique odd cycle of the ring block, and the edge \(\{a_1,\sigma_{\overline{\SAT}}\}\) connects it to the feed-forward component.
+In \(I_\phi\), deleting the three ring positions \(R_1,R_2,R_3\) leaves a balanced signed coupling graph and a bipartite asset graph. The imbalance is localized to the gated-ring block: \(R_1,R_2,R_3\) form an odd-NOT triangle, while the controller \(W\) has the side-couplings needed to gate \(R_1\) and attaches that block to the SAT circuit. In \(\GA(I_\phi)\), the triangle \(a_1-a_2-a_3-a_1\) is the unique odd cycle of the ring block, and the edge \(\{a_1,\sigma_{\overline{\SAT}}\}\) connects it to the feed-forward component.
 \end{theorem}
 \begin{proof}
-The feed-forward gate library is acyclic in the Boolean sense and can be assigned the layer-parity gauge: cross-layer debt-read edges are negative and same-bus shared-collateral edges are positive. Lemma~\ref{lem:fwd} gives the matching bipartite coloring of its asset graph. The ring contributes the three negative edges \(R_1R_2,R_2R_3,R_3R_1\), producing a negative 3-cycle, and the controller contributes a positive shared-collateral edge to \(R_1\) and a debt-read attachment to the SAT component. Removing \(R_1,R_2,R_3\) removes the only odd obstruction; keeping them preserves the asset triangle \(a_1-a_2-a_3-a_1\).
+The feed-forward gate library is acyclic in the Boolean sense and can be assigned the layer-parity gauge: cross-layer debt-read edges are negative and same-bus shared-collateral edges are positive. Lemma~\ref{lem:fwd} gives the matching bipartite coloring of its asset graph. The ring contributes the three negative edges \(R_1R_2,R_2R_3,R_3R_1\), producing a negative 3-cycle. The controller contributes a positive shared-collateral edge \(WR_1\), the negative side-coupling \(WR_2\) because \(W\)'s collateral asset \(a_1\) is \(R_2\)'s debt asset, and a debt-read attachment to the SAT component. Removing \(R_1,R_2,R_3\) removes the ring obstruction and the \(WR_1,WR_2\) side-couplings; keeping them preserves the asset triangle \(a_1-a_2-a_3-a_1\).
 \end{proof}
 
 \section{Gadget Algebra and Error Bounds}
@@ -866,7 +866,7 @@ The close-factor bound can be met by scaling the output impact. For a writer wit
 
 \section{Source Problem and Fan-Out}
 \label{app:source}
-The restricted source problem in Lemma~\ref{lem:source} is taken as a black box. Filos-Ratsikas et al.~\cite{FilosRatsikas2023} state PPAD-completeness for constant-approximate generalized circuits with gate set \(\{G_+,G_{1-}\}\). Budish et al.~\cite{Budish2023} give an alternative self-contained reduction to simplified circuits containing only SUM and NOT gates, even with bounded fan-out. Our construction does not require bounded fan-out because debt-leg reads are non-invasive.
+The restricted source problem in Lemma~\ref{lem:source} is taken as a black box. The load-bearing citation is the full version of Budish et al.~\cite[Appendix D, Definition 10 and Remark 7]{Budish2023}, which gives a self-contained reduction to simplified circuits containing only SUM and NOT gates, even with bounded fan-out. Filos-Ratsikas et al.~\cite{FilosRatsikas2023} and Rubinstein~\cite{Rubinstein2018} provide related restricted-gate and generalized-circuit hardness background. Our construction does not require bounded fan-out because debt-leg reads are non-invasive.
 
 The unbalanced-source promise used in Lemma~\ref{lem:unbalancedsource} is not a target-side graph tag. It is obtained before translation by adding the two gates \(a=1-s\) and \(b=\T(s+a)\) through an original source wire \(s\). This creates a signed source cycle \(s-a-b-s\) with one NOT edge. Lemma~\ref{lem:gadgetparity} then maps that source frustration to an odd collateral-debt cycle in the constructed borrowing graph.
 
@@ -897,7 +897,7 @@ B\ \text{is a nonsingular }M\text{-matrix}\\
 &\Longleftrightarrow \rho(A)<1
 \end{aligned}
 \]
-locate the regimes: small impact is an M-matrix box LCP, while large impact has a Z-matrix base that need not be a P-matrix. The unbounded Z-matrix LCP is polynomial for every Z-matrix; the obstruction here is the upper bound, whose standard-LCP embedding introduces the positive block shown in Appendix~\ref{app:lcp}.
+locate the regimes: small impact is an M-matrix box LCP, while large impact has a Z-matrix base that need not be a P-matrix. The unbounded Z-matrix LCP is polynomial for every Z-matrix; the obstruction here is the upper bound, whose standard-LCP embedding introduces the positive block shown in Appendix~\ref{app:zmatrix}.
 
 \begin{lemma}[extremal interior blocks are non-expansive]
 \label{lem:nonexp}
