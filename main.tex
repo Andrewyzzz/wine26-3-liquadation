@@ -37,7 +37,7 @@
 \begin{abstract}
 We study DeFi liquidation clearing with collateral-only sales and linear price impact.  Even without debt-side buy pressure, clearing can be nonmonotone: selling an asset can lower another borrower's debt value and thereby rescue that borrower.
 
-We show that the asset collateral-debt graph controls the complexity boundary.  If the graph is bipartite, a sign transform turns smooth clearing into a subtraction-free monotone clipped-affine system; approximate clearing reduces to succinct Tarski and lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\).  Small-impact instances are contractions, and a new Baker-free cascade solves the large-impact subtraction-free box problem whenever the transformed drift is nonnegative, a condition we characterize as a two-sector soft-liquidation regime.  For arbitrary drift, the least fixed point still has spectrally subcritical interior, and a monotone activation argument then removes the drift-sign restriction, placing the large-impact subtraction-free box problem in \(\mathsf P\) for all drift.  Conversely, non-bipartite instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
+We show that the asset collateral-debt graph controls the complexity boundary.  If the graph is bipartite and price impact is linear, a sign transform turns smooth clearing into a subtraction-free clipped-affine system; a Baker-free activation cascade computes an exact clearing in polynomial time for all drift, large impact included.  The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine cascade no longer applies.  Conversely, non-bipartite linear instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
@@ -78,28 +78,29 @@ where \((A,B)\) denotes collateral \(A\) and debt \(B\). If \(P_1\) is liquidate
 \end{figure}
 
 \paragraph{Positioning.}
-The novelty is not that clearing can have a Tarski/lattice structure; that is known for several financial clearing and fire-sale models. The contribution is to identify the DeFi-specific sign structure created by collateral-only price impact and debt relief: the collateral-debt graph determines whether this feedback can be globally aligned into a monotone Tarski/CLS problem or can implement SUM/NOT circuits and PPAD-hard fixed-point structure.
+The novelty is not that clearing can have a Tarski/lattice structure; that is known for several financial clearing and fire-sale models. The contribution is to identify the DeFi-specific sign structure created by collateral-only price impact and debt relief: the collateral-debt graph determines whether this feedback can be globally aligned into a subtraction-free system (polynomial-time for linear impact, CLS for monotone nonlinear impact) or can implement SUM/NOT circuits and PPAD-hard fixed-point structure.
 
 \paragraph{Main results.}
 Let \(\GA\) be the asset borrowing graph: vertices are assets and each position contributes the edge between its collateral and debt assets.  If \(\GA\) is bipartite, flipping one side of the asset prices and complementing liquidation variables whose collateral lies on one side transforms the equations into
 \[
        y=\clip_{[0,u]}(Ay+c),\qquad A\ge 0.
 \]
-Grid rounding then reduces approximate clearing to succinct Tarski, giving CLS membership.  This monotonicity is not by itself a polynomial-time algorithm for arbitrary large-impact drift; Section~\ref{sec:nonnegdrift} proves one for the nonnegative-drift subclass and then extends it to arbitrary drift by a monotone activation argument.
+For linear price impact, Section~\ref{sec:nonnegdrift} gives a polynomial-time exact algorithm for this subtraction-free box fixed-point problem for arbitrary drift, so bipartite linear clearing is in \(\mathsf P\).  The same monotonicity also has a robust Tarski consequence: grid rounding gives a CLS upper bound, and Appendix~\ref{app:zmatrix} extends this to separable monotone nonlinear impact curves, including independent AMM pools.  For that genuinely nonlinear sign-balanced class, improving the CLS upper bound to \(\mathsf P\), or proving CLS-hardness, remains open.
 
 On the hard side, we reduce from generalized circuits using only truncated-SUM and NOT gates.  The source circuit is made intrinsically unbalanced: it contains an odd-NOT cycle in the same dependency component as a hard wire.  The liquidation gadgets preserve parity, with NOT gates becoming odd collateral-debt paths and SUM gates becoming even paths.  Hence the hard instances are non-bipartite because the encoded circuit is sign-frustrated, not because of a disconnected anchor.  Smooth approximate clearing is in PPAD, and the all-or-nothing version is polynomial for balanced instances but NP-complete for connected non-bipartite ones.
 
-Thus the paper contributes a DeFi-native collateral-only clearing model, a sign-balance criterion placing bipartite smooth clearing in CLS, polynomial-time algorithms under small impact and under nonnegative drift, an intrinsic odd-NOT-to-non-bipartite PPAD-hardness reduction, and an NP-completeness result for connected non-bipartite all-or-nothing clearing.
+Thus the paper contributes a DeFi-native collateral-only clearing model, a sign-balance criterion placing bipartite linear smooth clearing in exact polynomial time, a CLS upper bound for bipartite monotone nonlinear impact, an intrinsic odd-NOT-to-non-bipartite PPAD-hardness reduction, and an NP-completeness result for connected non-bipartite all-or-nothing clearing.
 
 \begin{table}[t]
 \centering
 \caption{Complexity map. The hard entries are worst-case statements; small-impact entries are sufficient conditions for polynomial-time convergence.}
 \label{tab:map}
-\begin{tabular}{p{0.22\linewidth}p{0.42\linewidth}p{0.26\linewidth}}
+\begin{tabular}{p{0.27\linewidth}p{0.38\linewidth}p{0.25\linewidth}}
 \toprule
  & Sign-balanced / bipartite & Unbalanced / non-bipartite \\
 \midrule
-Smooth & CLS; P under small impact, or large-impact SFBFP (all drift) & constant-\(\delta\) PPAD-hard \\
+Smooth, linear impact & exact \(\mathsf P\) & constant-\(\delta\) PPAD-hard \\
+Smooth, separable monotone impact & CLS; \(\mathsf P\) vs.\ CLS-hard open beyond affine maps & PPAD-hard already in the linear subcase \\
 All-or-nothing & P & NP-complete \\
 \bottomrule
 \end{tabular}
@@ -198,7 +199,7 @@ The map
 \[
        T(y)=\clip_{[0,u]}(Ay+c)
 \]
-is therefore isotone in the product order. This is the true algorithmic consequence of sign-balance. It is stronger than a qualitative sign observation but weaker than a polynomial-time algorithm in the large-impact continuous setting: Tarski guarantees fixed points of monotone maps, and succinct monotone fixed-point search has its own complexity class behavior.
+is therefore isotone in the product order. This is the Tarski consequence of sign-balance. For linear impact it will be strengthened to an exact polynomial-time algorithm in Section~\ref{sec:nonnegdrift}; the CLS statement below records the robust monotone fixed-point upper bound that also survives the nonlinear extension in Appendix~\ref{app:zmatrix}.
 
 \begin{proof}[Proof of Theorem~\ref{thm:balancedCLS}]
 Fix \(\delta>0\). Choose a rational grid step \(\eta\le \delta\) with polynomially many bits, and let
@@ -214,7 +215,7 @@ where the floor is taken coordinate-wise to the largest grid point not exceeding
 A fixed point \(y=T_\eta(y)\) is an \(\eta\)-approximate fixed point of \(T\): coordinate-wise, \(y\le T(y)<y+\eta\), so \(\|T(y)-y\|_\infty\le \eta\le\delta\). Transforming back gives a \(\delta\)-clearing of the original market. Thus bipartite \(\delta\)-clearing reduces to the succinct Tarski fixed-point problem. Etessami, Papadimitriou, Rubinstein, and Yannakakis show that the succinct Tarski problem lies in both PPAD and PLS~\cite{EtessamiPapadimitriouRubinsteinYannakakis2020}. Fearnley, Goldberg, Hollender, and Savani show that \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\)~\cite{FearnleyGoldbergHollenderSavani2021}. Therefore bipartite \(\delta\)-clearing belongs to CLS.
 \end{proof}
 
-The same proof covers separable monotone price-impact curves, including independent asset--numeraire constant-product pools; the exact statement and proof are in Appendix~\ref{app:zmatrix}.  Routed, cross-asset, or path-dependent AMM execution is outside this extension.
+The same proof covers separable monotone price-impact curves, including independent asset--numeraire constant-product pools; the exact statement and proof are in Appendix~\ref{app:zmatrix}.  Routed, cross-asset, or path-dependent AMM execution is outside this extension.  For non-affine separable monotone impact, whether this CLS upper bound can be improved to \(\mathsf P\), or is tight via CLS-hardness, remains open.
 
 \begin{proposition}[small-impact polynomial tractability]
 \label{prop:smallimpact}
@@ -230,7 +231,7 @@ Thus \(T\) is a contraction. Banach iteration from any point converges geometric
 
 The same proof gives a Lipschitz version for separable monotone price impact; see Appendix~\ref{app:zmatrix}.
 
-\subsection{Polynomial Time for Nonnegative Drift}
+\subsection{Polynomial Time for Subtraction-Free Clearing}
 \label{sec:nonnegdrift}
 
 The sign-balanced transformation produces the abstract \emph{subtraction-free box fixed-point} problem
@@ -243,7 +244,7 @@ where \(g\) is the transformed drift.  Let \(z^\ast\) denote the least fixed poi
         I^\ast=\{i:0<z^\ast_i<u_i\},\qquad
         U^\ast=\{i:z^\ast_i=u_i\}.
 \]
-The following results sharpen the CLS upper bound in the large-impact regime, first for nonnegative drift and then, by a monotone activation argument, for arbitrary drift. They do not apply to the non-bipartite hardness instances, where the subtraction-free condition \(B\ge0\) is absent.
+The following results sharpen the monotone upper bound into an exact polynomial-time algorithm for affine subtraction-free maps, first for nonnegative drift and then, by a monotone activation argument, for arbitrary drift. They do not apply to the non-bipartite hardness instances, where the subtraction-free condition \(B\ge0\) is absent.
 
 We use standard facts about nonnegative matrices~\cite{BermanPlemmons1994}: principal-submatrix spectral radius monotonicity, Perron--Frobenius for reducible matrices, Collatz--Wielandt subinvariance, and exact rational \(M\)-matrix tests for deciding \(\rho(B')<1\). Appendix~\ref{app:zmatrix} records the associated box-LCP algebra and a counterexample showing why naive subcritical over-capping needs repair.
 
@@ -374,9 +375,18 @@ For every rational \(B\ge0\), every rational drift \(g\) of arbitrary sign, and 
 Run the activation loop of Lemma~\ref{lem:activation}: at most \(|S|\) activation steps, each invoking one from-above cascade of at most \(|S|\) rounds (Lemma~\ref{lem:fromabove}). Each round is one exact rational linear solve of polynomial bit length together with one exact \(M\)-matrix subcriticality test (Lemma~\ref{thm:mmatrix}). The total is \(O(|S|^2)\) exact solves, polynomial in the input size, and the loop returns \(z^\ast\).
 \end{proof}
 
+\begin{corollary}[exact polynomial-time clearing for bipartite linear markets]
+\label{cor:linearP}
+In the collateral-only linear price-impact model with rational inputs, if the asset borrowing graph \(\GA\) is bipartite, then an exact smooth clearing can be computed in polynomial time.
+\end{corollary}
+
+\begin{proof}
+Lemma~\ref{lem:nonneg} transforms the clearing equations into \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\), preserving rational bit length. Theorem~\ref{thm:mixedinP} computes the least fixed point of this transformed system in polynomial time. Inverting the sign transform gives an exact clearing of the original linear-impact market.
+\end{proof}
+
 \begin{remark}[the mixed-sign case is settled]
 \label{rem:mixedsign}
-Theorem~\ref{thm:mixedinP} removes the drift-sign restriction: the transformed sign-balanced clearing map \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\) is in \(\mathsf P\) for \emph{all} drift, large impact included, so Theorem~\ref{cor:inP} and its market characterization (Proposition~\ref{prop:nonnegdrift}) are the nonnegative-drift special case. The two loops never reverse---the activation set only grows (\(\le|S|\) steps) and each block's clamp set only shrinks (\(\le|S|\) rounds)---which is what eliminates the over-cap/uncap churn of a naive symmetric cascade. The two ingredients are Lemma~\ref{lem:lfpsub} (the least fixed point's interior is always subcritical, for any drift) and the from-above positivity of Lemma~\ref{lem:fromabove} (which replaces nonnegativity of the drift). Whether the simpler one-pass \emph{symmetric} cascade of the earlier experiments always terminates is a separate method-level question, not needed for this complexity result.
+Theorem~\ref{thm:mixedinP} removes the drift-sign restriction: the transformed sign-balanced clearing map \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\) is in \(\mathsf P\) for \emph{all} drift, large impact included. Consequently Corollary~\ref{cor:linearP} supersedes the linear-impact CLS upper bound of Theorem~\ref{thm:balancedCLS}; the latter remains useful for the separable nonlinear extension of Appendix~\ref{app:zmatrix}. Theorem~\ref{cor:inP} and its market characterization (Proposition~\ref{prop:nonnegdrift}) are the nonnegative-drift special case. The two loops never reverse---the activation set only grows (\(\le|S|\) steps) and each block's clamp set only shrinks (\(\le|S|\) rounds)---which is what eliminates the over-cap/uncap churn of a naive symmetric cascade. The two ingredients are Lemma~\ref{lem:lfpsub} (the least fixed point's interior is always subcritical, for any drift) and the from-above positivity of Lemma~\ref{lem:fromabove} (which replaces nonnegativity of the drift). Whether the simpler one-pass \emph{symmetric} cascade of the earlier experiments always terminates is a separate method-level question, not needed for this complexity result.
 \end{remark}
 
 Appendix~\ref{app:zmatrix} records the equivalent upper-bounded Z-matrix complementarity form and the method-level refinements.  This also explains why the polynomial algorithms for conservation-like monotone payment networks~\cite{BestingHoeferHuth2026} do not subsume the large-impact DeFi map: the transformed equations are monotone and piecewise-linear, but they are not substochastic payment-allocation equations.
@@ -500,7 +510,9 @@ Let \(\kappa\) be the constant from Lemma~\ref{lem:unbalancedsource} and let \(B
 The quantifiers in Theorem~\ref{thm:hardness} are worst-case. We do not claim that every non-bipartite borrowing graph makes clearing hard. Rather, Lemma~\ref{lem:gadgetparity} shows that the constructed hard instances are non-bipartite for an intrinsic reason: the source circuit contains odd-NOT frustration, and the liquidation gadgets preserve that parity as an odd collateral-debt cycle. The non-bipartiteness is therefore part of the hard component, not a disconnected certificate attached after the fact.
 
 \paragraph{Related work.}
-Prior financial clearing and fire-sale work already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013,BestingHoeferHuth2026,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Our map is not a conservation-like payment allocation: collateral sales move prices, and the same asset may be another borrower's debt.  CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}; here NOT comes from collateral-only debt relief.  DeFi liquidation and lending work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.  Mixed-sign SFBFP is in \(\mathsf P\) (Theorem~\ref{thm:mixedinP}), combining the always-subcritical interior of Lemma~\ref{lem:lfpsub} with a monotone activation reduction; Appendix~\ref{app:sfbfp} is method-level only.
+Prior financial clearing and fire-sale work already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} go further for generalized Eisenberg--Noe payment networks: they compute extremal Tarski fixed points in polynomial time, and the minimal one strongly polynomially.  That setting is payment allocation with conservation structure in the Eisenberg--Noe core.  Our equations are price-impact equations: collateral sales move prices, assets may serve as both collateral and debt, and the large-impact transformed matrix can have spectral radius at least one.  The new point is the sign boundary, not generic ``least fixed point in P'': bipartite feedback becomes subtraction-free (P for linear impact, CLS for separable nonlinear impact), while odd collateral-debt cycles implement NOT and give PPAD-hardness.
+
+CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}; here NOT comes from collateral-only debt relief.  DeFi liquidation and lending work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.  Appendix~\ref{app:sfbfp} records method-level refinements around the exact SFBFP algorithm; it is not needed for the main P/CLS/PPAD boundary.
 
 \begin{thebibliography}{99}
 
@@ -635,7 +647,7 @@ The identity uses \(1-\clip_{[0,1]}(t)=\clip_{[0,1]}(1-t)\) on the relevant rang
 
 \begin{corollary}[balanced circuit fragment]
 \label{cor:fragment}
-The sign-balanced SUM/NOT fragment is the circuit analogue of the transformed DeFi system in Lemma~\ref{lem:nonneg}: after a gauge transform it has the form \(y=\clip(Ay+c)\) with \(A\ge0\). Therefore the balanced fragment lies in CLS by Theorem~\ref{thm:balancedCLS}; SUM/NOT hardness must come from sign-imbalance.
+The sign-balanced SUM/NOT fragment is the circuit analogue of the transformed DeFi system in Lemma~\ref{lem:nonneg}: after a gauge transform it has the form \(y=\clip(Ay+c)\) with \(A\ge0\). Therefore the balanced fragment is polynomial-time solvable by Theorem~\ref{thm:mixedinP}; SUM/NOT hardness must come from sign-imbalance.
 \end{corollary}
 
 \paragraph{Separable monotone impact and comparative statics.}
@@ -1022,8 +1034,8 @@ For a lower-boundary coordinate \(i\), monotonicity and \(\tilde y\le y^\ast\) g
 \paragraph{Why exact active-set methods are delicate.}
 Along the bottom Kleene sequence each coordinate has a monotone phase structure: it can move only from the lower boundary toward the interior and from the interior toward the upper boundary, never in the opposite direction. We do not assert a finite phase-transition bound, since a coordinate may approach its upper bound only asymptotically. Within a fixed active set the dynamics is an affine recursion \(y_S^{t+1}=A_{SS}y_S^t+g\), and exact event-driven algorithms appear delicate because first-threshold times reduce to sign questions for matrix-power sequences. Moreover, for \(\rho(A)\ge1\) the box LCP can have several solutions, obstructing the unique-solution structure of \(\mathsf{UEOPL}\).
 
-\paragraph{An EOPL-style attack route.}
-The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\mathbf 1^\top y/\eta\) is a natural path-following viewpoint: \(T_\eta\) is isotone and rounds down, so the potential strictly increases off fixed points and is polynomially bounded. Turning this into an \(\mathsf{EOPL}\) reduction would require a polynomial predecessor selection for the monotone Kleene path; the forward map is single-valued while predecessors need not be. We therefore record this only as an attack route. If it succeeds, the sign-balanced large-impact case would descend from CLS to an EOPL-style subclass.
+\paragraph{An EOPL-style path viewpoint.}
+The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\mathbf 1^\top y/\eta\) is a natural path-following viewpoint: \(T_\eta\) is isotone and rounds down, so the potential strictly increases off fixed points and is polynomially bounded. Turning this into an \(\mathsf{EOPL}\) reduction would require a polynomial predecessor selection for the monotone Kleene path; the forward map is single-valued while predecessors need not be. Since Theorem~\ref{thm:mixedinP} gives an exact polynomial-time algorithm for affine subtraction-free maps, this viewpoint is recorded only as structural context for grid-based monotone searches.
 
 \paragraph{Complexity of the mixed-sign case (settled).}
 The Subtraction-Free Box Fixed Point problem is in \(\mathsf P\) for arbitrary drift by Theorem~\ref{thm:mixedinP}: for rational \(A\ge0\), arbitrary rational \(c\), and \(u>0\), the least fixed point of \(y=\clip_{[0,u]}(Ay+c)\) is computable in polynomial time. The algorithm combines Lemma~\ref{lem:lfpsub} (no ramping interior at the least fixed point) with a monotone activation loop that reduces the problem to active blocks whose least fixed point is strictly positive, each solved by an exact from-above cascade; the difficulty is thus combinatorial and algebraic rather than Diophantine. The orbit-following and bounded-magnitude statements recorded below are method-level refinements around this exact algorithm, not its foundation; in particular, whether the one-pass \emph{symmetric} cascade always terminates is a separate method-level question that the activation algorithm sidesteps.

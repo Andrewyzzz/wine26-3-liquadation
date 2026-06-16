@@ -10,9 +10,20 @@ Post-review tweak: the Appendix G/SFBFP opening now says the main unconditional 
 result is Theorem `thm:mixedinP` for arbitrary drift, with Theorem `cor:inP` as the
 nonnegative-drift special case.
 
+Second positioning tweak: after `thm:mixedinP`, the main text now distinguishes three regimes
+explicitly. Linear bipartite clearing is exact `P` (new `Corollary \label{cor:linearP}` from
+`lem:nonneg` + `thm:mixedinP`); separable monotone nonlinear/AMM clearing remains a `CLS` upper
+bound via Tarski/grid rounding, with `P` vs. `CLS`-hardness left open beyond affine maps; and
+non-bipartite linear clearing remains the PPAD-hard side. The abstract, intro, Table 1, the
+balanced circuit corollary, Appendix G's path-viewpoint wording, and related work were updated to
+avoid selling generic "least fixed point in P" as the novelty. The related-work paragraph now
+separates the paper from Besting--Hoefer--Huth's conservation/payment-network algorithms: their
+setting computes extremal fixed points in generalized Eisenberg--Noe payment networks, while this
+paper's boundary is the DeFi sign structure under price-impact feedback.
+
 ## Headline addition: mixed-sign SFBFP is in P
 
-**Where:** end of `\subsection` "Polynomial Time for Nonnegative Drift" (`sec:nonnegdrift`). The
+**Where:** end of `\subsection` "Polynomial Time for Subtraction-Free Clearing" (`sec:nonnegdrift`). The
 open `\begin{remark}[mixed-sign frontier]` (`rem:mixedsign`) was replaced by:
 
 - a one-sentence standard fact (Kleene): for a continuous isotone self-map of a box, the iterates
