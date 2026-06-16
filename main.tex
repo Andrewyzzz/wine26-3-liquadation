@@ -37,7 +37,7 @@
 \begin{abstract}
 Liquidations in DeFi lending protocols are interdependent: selling collateral moves prices, which can trigger or suppress other liquidations. We study a collateral-only liquidation model with linear price impact, in which liquidators repay debt externally and only collateral sales move market prices. Even in this conservative mechanism, clearing can be nonmonotone: when an asset sold as collateral is also used as another position's debt asset, its price decline reduces that borrower's debt burden.
 
-We show that sign-balance has a precise complexity-theoretic meaning. If the asset borrowing graph is bipartite, then after flipping one side of the asset prices and complementing liquidation variables on one side, the smooth clearing equations become a subtraction-free monotone clipped-affine system. Approximate clearing in this sign-balanced regime reduces to the succinct Tarski fixed-point problem and therefore lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). In the small-impact regime, the same system is a contraction and clearing is computable in polynomial time. Conversely, once sign-balance is removed, non-bipartite instances can implement a NOT primitive, encode SUM/NOT generalized circuits, and finding even a constant-approximate clearing is PPAD-hard. Smooth approximate clearing is in PPAD. In the all-or-nothing model, the balanced case is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
+We show that sign-balance has a precise complexity-theoretic meaning. If the asset borrowing graph is bipartite, then after flipping one side of the asset prices and complementing liquidation variables on one side, the smooth clearing equations become a subtraction-free monotone clipped-affine system. Approximate clearing in this sign-balanced regime reduces to the succinct Tarski fixed-point problem and therefore lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). In the small-impact regime, the same system is a contraction and clearing is computable in polynomial time. We further show that the subtraction-free box fixed-point problem with nonnegative drift is solvable in polynomial time by a Baker-free cascade and a graph-reachability floor peel; for arbitrary drift, the least fixed point always has spectrally subcritical interior, leaving a clean mixed-sign pivoting question. Conversely, once sign-balance is removed, non-bipartite instances can implement a NOT primitive, encode SUM/NOT generalized circuits, and finding even a constant-approximate clearing is PPAD-hard. Smooth approximate clearing is in PPAD. In the all-or-nothing model, the balanced case is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
@@ -83,13 +83,13 @@ Financial clearing problems often have monotone or lattice structure. Eisenberg-
 \paragraph{Main results.}
 Let \(\GA\) be the asset borrowing graph: its vertices are assets and each position gives an edge between its collateral and debt assets. Our first main result identifies when the DeFi liquidation map preserves the Tarski-type structure familiar from monotone clearing.
 \begin{quote}
-\textbf{Sign-balanced side.} If \(\GA\) is bipartite, smooth \(\delta\)-clearing reduces to the succinct Tarski fixed-point problem and belongs to \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). If, in addition, liquidation feedback is small enough to make the transformed map contractive, clearing is unique and computable in polynomial time.
+\textbf{Sign-balanced side.} If \(\GA\) is bipartite, smooth \(\delta\)-clearing reduces to the succinct Tarski fixed-point problem and belongs to \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\). If, in addition, liquidation feedback is small enough to make the transformed map contractive, clearing is unique and computable in polynomial time. For the subtraction-free box fixed-point abstraction, the large-impact case with nonnegative drift is also polynomial-time solvable.
 \end{quote}
 The proof uses the same sign transform as a monotonicity argument, but we do not claim that monotonicity alone gives a polynomial-time algorithm. After flipping one side of the asset prices and complementing liquidation variables whose collateral lies on one side, the equations become
 \[
        y=\clip_{[0,u]}(Ay+c),\qquad A\ge 0.
 \]
-Thus the transformed map is order-preserving. Discretizing it on a grid yields a succinct monotone Tarski instance; a grid fixed point is an approximate clearing. The same representation also shows that the balanced equations have an upper-bounded Z-matrix complementarity structure. This structural reduction is useful, but by itself it is not a polynomial-time algorithm in the large-impact regime.
+Thus the transformed map is order-preserving. Discretizing it on a grid yields a succinct monotone Tarski instance; a grid fixed point is an approximate clearing. The same representation also shows that the balanced equations have an upper-bounded Z-matrix complementarity structure. This structural reduction is useful, but by itself it is not a polynomial-time algorithm for arbitrary large-impact drift. Section~\ref{sec:nonnegdrift} identifies a substantial tractable subclass: nonnegative drift admits an exact polynomial-time cascade, while mixed-sign drift remains open.
 
 Our negative result gives the other side of the complexity map.
 \begin{quote}
@@ -101,7 +101,7 @@ The paper's contributions can be summarized as follows.
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=3pt]
 \item \emph{DeFi-native model:} a collateral-only liquidation clearing problem with linear price impact, close-factor-compatible sales, and debt relief through asset-denominated liabilities.
 \item \emph{Sign-balance criterion:} bipartite asset borrowing graphs yield subtraction-free monotone clipped-affine fixed points, hence CLS membership for smooth approximate clearing.
-\item \emph{Two-dimensional complexity map:} small feedback gain gives contraction and polynomial-time computation, while large-impact bipartite smooth clearing remains open.
+\item \emph{Two-dimensional complexity map:} small feedback gain gives contraction and polynomial-time computation; large-impact subtraction-free clearing with nonnegative drift is also in \(\mathsf P\), while the mixed-sign case remains open.
 \item \emph{Hardness primitive:} odd-NOT frustration in SUM/NOT circuits maps to non-bipartite collateral-debt cycles, giving constant-\(\delta\) PPAD-hardness in the large-impact worst case.
 \item \emph{Discrete hardness:} all-or-nothing clearing is NP-complete in connected non-bipartite instances, completing the discrete cell of the map.
 \end{itemize}
@@ -110,11 +110,11 @@ The paper's contributions can be summarized as follows.
 \centering
 \caption{Complexity map. The hard entries are worst-case statements; small-impact entries are sufficient conditions for polynomial-time convergence.}
 \label{tab:map}
-\begin{tabular}{lll}
+\begin{tabular}{p{0.22\linewidth}p{0.42\linewidth}p{0.26\linewidth}}
 \toprule
  & Sign-balanced / bipartite & Unbalanced / non-bipartite \\
 \midrule
-Smooth & in CLS; small-impact P & constant-\(\delta\) PPAD-hard \\
+Smooth & CLS; P under small impact or nonnegative-drift SFBFP & constant-\(\delta\) PPAD-hard \\
 All-or-nothing & P & NP-complete \\
 \bottomrule
 \end{tabular}
@@ -187,9 +187,9 @@ If \(\GA\) is bipartite, a coordinated sign flip removes the competitive signs a
 \paragraph{Sign balance versus hardness.}
 The two graph views should not be conflated.  The asset graph \(\GA\) controls the sign pattern of the price map, and bipartiteness of \(\GA\) is the structural assumption used on the sign-balanced side.  The position graph \(\GX\) records local liquidation-to-liquidation feedback: co-writers with a common collateral asset produce positive edges, while a writer whose collateral is another position's debt asset produces a negative edge.  Harary's balance criterion says that a signed graph admits a coordinate flip making all edges positive if and only if it has no cycle with an odd number of negative edges.  The triangle in Fig.~\ref{fig:triangle} violates this criterion.
 
-The positive and negative results therefore have different quantifiers.  Bipartiteness gives a monotone Tarski structure and places approximate clearing in CLS; it gives a polynomial-time algorithm under the additional small-impact condition of Proposition~\ref{prop:smallimpact}.  Non-bipartiteness is a worst-case source of hardness: outside the balanced class, large-impact instances can be constructed that encode PPAD-complete fixed-point structure.  Small-impact non-bipartite instances may still be contractions and hence easy.  Sign balance is therefore a complexity-class certificate rather than an instance-level ``easy if and only if'' criterion.
+The positive and negative results therefore have different quantifiers.  Bipartiteness gives a monotone Tarski structure and places approximate clearing in CLS; it gives a polynomial-time algorithm under the additional small-impact condition of Proposition~\ref{prop:smallimpact}, and for the nonnegative-drift subtraction-free abstraction by Theorem~\ref{cor:inP}.  Non-bipartiteness is a worst-case source of hardness: outside the balanced class, large-impact instances can be constructed that encode PPAD-complete fixed-point structure.  Small-impact non-bipartite instances may still be contractions and hence easy.  Sign balance is therefore a complexity-class certificate rather than an instance-level ``easy if and only if'' criterion.
 
-The distinction between monotone structure and polynomial-time tractability is important. Tarski's theorem implies existence of fixed points and, in the succinct setting, a well-defined total search problem, but it does not by itself give a polynomial-time algorithm for a continuous map. The next section uses the monotone structure to place sign-balanced clearing in CLS, and then identifies a separate small-impact condition under which ordinary contraction gives polynomial-time computation.
+The distinction between monotone structure and polynomial-time tractability is important. Tarski's theorem implies existence of fixed points and, in the succinct setting, a well-defined total search problem, but it does not by itself give a polynomial-time algorithm for a continuous map. The next section uses the monotone structure to place sign-balanced clearing in CLS, identifies a separate small-impact condition under which ordinary contraction gives polynomial-time computation, and then proves an exact polynomial-time algorithm for nonnegative-drift subtraction-free box fixed points.
 
 \section{Sign-Balanced Clearing, Tarski, and Small-Impact Tractability}
 \label{sec:tractability}
@@ -348,6 +348,133 @@ The clipping maps are coordinate-wise nonexpansive. The transformed price block 
 component-wise. Since \(\widehat A\ge0\) and \(\rho(\widehat A)<1\), Perron-Frobenius gives \(v>0\) and \(\lambda<1\) with \(\widehat A v\le\lambda v\). In the weighted norm \(\|r\|_v=\max_i |r_i|/v_i\), the displayed bound gives \(\|T(y)-T(y')\|_v\le\lambda\|y-y'\|_v\). Banach iteration yields uniqueness and geometric convergence; standard rational contraction bounds give the stated running time. For the linear model, \(\gamma_k=s_k\), so Proposition~\ref{prop:smallimpact} is recovered.
 \end{proof}
 
+\subsection{Polynomial Time for Nonnegative Drift}
+\label{sec:nonnegdrift}
+
+The sign-balanced transformation produces the abstract \emph{subtraction-free box fixed-point} problem
+\[
+        z=\clip_{[0,u]}(Bz+g),\qquad B\ge0,\quad u>0,
+\]
+where \(g\) is the transformed drift.  Let \(z^\ast\) denote the least fixed point and write
+\[
+        L^\ast=\{i:z^\ast_i=0\},\qquad
+        I^\ast=\{i:0<z^\ast_i<u_i\},\qquad
+        U^\ast=\{i:z^\ast_i=u_i\}.
+\]
+The following results sharpen the CLS upper bound in the nonnegative-drift regime. They do not apply to the non-bipartite hardness instances, where the subtraction-free condition \(B\ge0\) is absent.
+
+\begin{lemma}[algebraic box-LCP form]
+\label{thm:bakerfree}
+For \(B\ge0\) and any \(g\), the least fixed point \(z^\ast\), its floor set \(L^\ast\), and its clamp set \(U^\ast\) are described by a finite system of linear equations and rational inequalities:
+\[
+        z^\ast_{L^\ast}=0,\qquad z^\ast_{U^\ast}=u_{U^\ast},\qquad
+        z^\ast_{I^\ast}
+        =(I-B_{I^\ast I^\ast})^{-1}\bigl(g_{I^\ast}+B_{I^\ast U^\ast}u_{U^\ast}\bigr),
+\]
+together with the lower-, interior-, and upper-bound inequalities defining the three sets. Thus the answer is algebraic over rational data; no logarithms, exponentials, or crossing-time comparisons are intrinsic to the fixed-point set.
+\end{lemma}
+
+\begin{proof}
+On \(I^\ast\), the clipping is inactive, so the displayed linear system is exactly the fixed-point equation after substituting \(z^\ast_{L^\ast}=0\) and \(z^\ast_{U^\ast}=u_{U^\ast}\). The inverse exists by Lemma~\ref{lem:lfpsub}. The inequalities \(Bz^\ast+g\le0\) on \(L^\ast\), \(0<z^\ast<u\) on \(I^\ast\), and \(Bz^\ast+g\ge u\) on \(U^\ast\) are precisely the box complementarity conditions. Conversely, any partition satisfying these equations and inequalities yields a box fixed point. The least solution is the least element of this finite algebraic description.
+\end{proof}
+
+\begin{lemma}[exact subcriticality tests]
+\label{thm:mmatrix}
+For rational \(B'\ge0\), the condition \(\rho(B')<1\) can be tested by exact rational polynomial-time \(M\)-matrix tests for \(I-B'\), for example via Hawkins--Simon certificates or an equivalent linear-programming certificate. No numerical eigenvalue approximation or transcendence bound is needed.
+\end{lemma}
+
+\begin{proof}
+\(I-B'\) is a Z-matrix. Standard \(M\)-matrix characterizations give
+\[
+\begin{aligned}
+        \rho(B')<1
+        &\Longleftrightarrow
+        I-B'\text{ is a nonsingular }M\text{-matrix} \\
+        &\Longleftrightarrow
+        \exists v>0\text{ with }(I-B')v>0 .
+\end{aligned}
+\]
+After a harmless normalization, the last condition is a rational linear feasibility problem; equivalent principal-minor and elimination tests give the same exact decision.
+\end{proof}
+
+\begin{lemma}[subcritical upper bound]
+\label{lem:sub}
+Assume \(\rho(B_{SS})<1\) and \(g'\ge0\). The unclipped solve
+\[
+\begin{aligned}
+        \hat z
+        &=(I-B_{SS})^{-1}g' \\
+        &=\sum_{t\ge0}B_{SS}^tg'
+\end{aligned}
+\]
+dominates the least box fixed point on \(S\). If \(\hat z\le u_S\), then \(\hat z\) is exact on \(S\). Otherwise, the over-threshold set can strictly contain the true clamp set; such coordinates must be verified and repaired rather than capped once and for all.
+\end{lemma}
+
+\begin{proof}
+The clipped Kleene orbit from \(0\) is coordinate-wise bounded above by the unclipped affine orbit, which increases to \(\hat z\); hence \(z^\ast_S\le\hat z\). If \(\hat z\le u_S\), no upper clip is active, so \(\hat z\) is itself the box fixed point. Strict over-capping is real: for
+\[
+        B=\begin{pmatrix}0&1\\0&0\end{pmatrix},\qquad
+        g'=(0,10),\qquad u=(5,1),
+\]
+the unclipped solution is \(\hat z=(10,10)\), but the box fixed point is \((1,1)\), so only the second coordinate is truly clamped.
+\end{proof}
+
+\begin{lemma}[the least fixed point has subcritical interior]
+\label{lem:lfpsub}
+For any \(B\ge0\) and any \(g\in\R^n\), the least fixed point of \(T(z)=\clip_{[0,u]}(Bz+g)\) satisfies
+\[
+        \rho(B_{I^\ast I^\ast})<1 .
+\]
+\end{lemma}
+
+\begin{proof}
+Suppose \(M=B_{I^\ast I^\ast}\) has \(\rho(M)\ge1\). Perron--Frobenius, allowing reducibility, gives a nonzero vector \(\delta\ge0\) with \(M\delta=\rho(M)\delta\). Extend \(\delta\) by zero outside \(I^\ast\). For sufficiently small \(\varepsilon>0\), the point \(z(\varepsilon)=z^\ast-\varepsilon\delta\) remains in the same open box on \(I^\ast\). On \(I^\ast\),
+\[
+        (Bz(\varepsilon)+g)_{I^\ast}
+        =z^\ast_{I^\ast}-\varepsilon M\delta
+        \le z^\ast_{I^\ast}-\varepsilon\delta
+        =z(\varepsilon)_{I^\ast}.
+\]
+On \(U^\ast\), decreasing \(z^\ast\) in nonnegative directions can only decrease the drive, so clipping gives \(T_i(z(\varepsilon))\le u_i=z_i(\varepsilon)\). On \(L^\ast\), the fixed-point condition implies \((Bz^\ast+g)_i\le0\), and the drive again only decreases, so \(T_i(z(\varepsilon))=0=z_i(\varepsilon)\). Thus \(T(z(\varepsilon))\le z(\varepsilon)\). The least fixed point of a monotone map is the least prefixed point, so \(z^\ast\le z(\varepsilon)<z^\ast\) on the support of \(\delta\), a contradiction.
+\end{proof}
+
+For \(g\ge0\), the remaining issue is the floor.  In the feeds graph, put an arc \(j\to i\) whenever \(B_{ij}>0\).
+
+\begin{lemma}[floor equals unreachability]
+\label{lem:floor}
+Assume \(g\ge0\). Let \(A\) be the set of coordinates reachable from \(\operatorname{supp}(g)\) in the feeds graph and let \(L\) be its complement. Then \(z^\ast_L=0\), \(z^\ast_A>0\), no vertex of \(L\) is reachable from \(A\), and the restricted active block
+\[
+        z_A=\clip_{[0,u_A]}(B_{AA}z_A+g_A)
+\]
+is autonomous.
+\end{lemma}
+
+\begin{proof}
+In the Kleene iteration from \(0\), a coordinate becomes positive exactly when it receives positive input from \(g\) or from an already positive coordinate, since all coefficients and all existing positive values are nonnegative. Hence the eventual positive coordinates are exactly the reachable set \(A\). If a coordinate in \(A\) fed a coordinate in \(L\), then the latter would also be reachable, a contradiction. Therefore \(z^\ast_L=0\), and the equations on \(A\) do not read \(L\).
+\end{proof}
+
+\begin{lemma}[active blocks are cascade-solvable]
+\label{thm:term}
+Consider an autonomous block with \(B\ge0\), \(g\ge0\), and every coordinate reachable from \(\operatorname{supp}(g)\). Then its box map has a unique fixed point, and that fixed point can be computed in \(O(n)\) cascade rounds. Each round uses exact rational linear solves and exact subcriticality tests of Lemma~\ref{thm:mmatrix}.
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+Reachability gives \(z^\ast>0\), so \(I^\ast=\{i:z^\ast_i<u_i\}\). By Lemma~\ref{lem:lfpsub}, \(B_{I^\ast I^\ast}\) is subcritical. The cascade maintains a tentative upper-clamp set \(C\): while the residual interior is not subcritical, it adds a coordinate to \(C\); once the residual interior is subcritical, it solves the interior linear system exactly, caps any over-threshold coordinates, and then repairs by removing every tentative cap whose drive is below its upper bound. At every repair checkpoint the constructed point \(z\) is prefixed, \(T(z)\le z\), hence \(z\ge z^\ast\). Therefore a truly clamped coordinate is never removed. After a repair, the remaining interior is contained in \(I^\ast\), hence subcritical, so no new supercritical phase can occur; the tentative cap set strictly shrinks until no bad cap remains. The resulting fixed point must be unique: if \(z'\ge z^\ast\) were another fixed point, the positive difference set would lie inside \(I^\ast\) and satisfy \(\delta\le B_{I^\ast I^\ast}\delta\), contradicting \(\rho(B_{I^\ast I^\ast})<1\). Thus the cascade returns \(z^\ast\) after \(O(n)\) additions/removals.
+\end{proof}
+
+\begin{theorem}[SFBFP is in \(\mathsf P\) for nonnegative drift]
+\label{cor:inP}
+For every rational \(B\ge0\), \(g\ge0\), and \(u>0\), the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) is computable in time polynomial in the input bit length.
+\end{theorem}
+
+\begin{proof}
+Compute the reachable set \(A\) of Lemma~\ref{lem:floor} by graph search and set \(z^\ast_L=0\). The active subsystem on \(A\) is autonomous and satisfies the hypotheses of Lemma~\ref{thm:term}, so the cascade returns its unique fixed point in \(O(|A|)\) rounds. The exact linear solves have polynomial bit complexity, and each subcriticality decision is an exact rational \(M\)-matrix test by Lemma~\ref{thm:mmatrix}. Combining the active solution with \(z^\ast_L=0\) gives the least fixed point of the original system.
+\end{proof}
+
+\begin{remark}[mixed-sign frontier]
+Lemma~\ref{lem:lfpsub} holds for arbitrary drift, so the least fixed point never has a ramping interior. What remains open is algorithmic: for mixed-sign \(g\), floors are no longer determined by reachability, uniqueness can fail, and the natural symmetric cascade can over-cap and later uncap. Exact-arithmetic experiments found no cycling and at most three state changes per coordinate on tested instances up to \(n=12\), but this is evidence rather than a theorem. Proving termination, or finding a counterexample, is the remaining pivoting question between Lemma~\ref{lem:lfpsub} and a polynomial-time algorithm for mixed-sign drift.
+\end{remark}
+
 The transformed equations also have a useful complementarity interpretation. Let \(B=I-A\) and \(d=-c\). Then \(y=T(y)\) is equivalent to the upper-bounded complementarity system
 \begin{equation}
 \label{eq:ub-lcp}
@@ -355,10 +482,10 @@ The transformed equations also have a useful complementarity interpretation. Let
   \qquad
   0\le w\perp u-y\ge0.
 \end{equation}
-The base matrix \(B\) is a Z-matrix, since \(A\ge0\). The naive standard-LCP embedding of \eqref{eq:ub-lcp} has a \(+I\) block and is not itself a Z-matrix LCP; the bounded form is the correct structural statement. Appendix~\ref{app:zmatrix} gives the detailed conversion. We use this complementarity view to explain the sign-balanced structure, but our polynomial-time claim is restricted to the contraction/M-matrix regime of Proposition~\ref{prop:smallimpact}.
+The base matrix \(B\) is a Z-matrix, since \(A\ge0\). The naive standard-LCP embedding of \eqref{eq:ub-lcp} has a \(+I\) block and is not itself a Z-matrix LCP; the bounded form is the correct structural statement. Appendix~\ref{app:zmatrix} gives the detailed conversion. We use this complementarity view to explain the sign-balanced structure. Polynomial-time computation follows either from contraction/M-matrix conditions such as Proposition~\ref{prop:smallimpact}, or from the nonnegative-drift cascade of Theorem~\ref{cor:inP}.
 
 \begin{remark}
-The large-impact bipartite regime is an interesting open case. The transform places it in the Tarski/CLS world and gives the upper-bounded Z-matrix structure above, but we do not claim a polynomial-time algorithm for arbitrary \(\rho(A)\ge1\). This does not contradict polynomial algorithms for monotone payment-network clearing~\cite{BestingHoeferHuth2026}. Those algorithms exploit payment-network structure such as no-overpayment/no-fraud constraints and conservation-like flow or circulation properties. The transformed DeFi map is monotone and piecewise-linear, but it is a price-impact liquidation map rather than a payment allocation map; its feedback matrix need not be substochastic or conservative, and in the large-impact regime it may have spectral radius at least one. In the small-impact regime where this feedback becomes contractive, Proposition~\ref{prop:smallimpact} recovers polynomial-time computation.
+The large-impact bipartite regime has a sharper boundary than monotonicity alone suggests. Theorem~\ref{cor:inP} gives polynomial time for nonnegative drift, while Lemma~\ref{lem:lfpsub} shows that even mixed-sign least clearings have subcritical interior. We still do not claim a polynomial-time algorithm for arbitrary mixed-sign drift. This does not contradict polynomial algorithms for monotone payment-network clearing~\cite{BestingHoeferHuth2026}. Those algorithms exploit payment-network structure such as no-overpayment/no-fraud constraints and conservation-like flow or circulation properties. The transformed DeFi map is monotone and piecewise-linear, but it is a price-impact liquidation map rather than a payment allocation map; its feedback matrix need not be substochastic or conservative, and in the large-impact regime it may have spectral radius at least one. In the small-impact regime where this feedback becomes contractive, Proposition~\ref{prop:smallimpact} recovers polynomial-time computation.
 \end{remark}
 
 \section{Membership and All-or-Nothing Clearing}
@@ -498,7 +625,7 @@ The quantifiers in Theorem~\ref{thm:hardness} are worst-case. We do not claim th
 \section{Related Work and Discussion}
 \label{sec:discussion}
 \paragraph{Financial clearing as Tarski fixed points.}
-Eisenberg and Noe~\cite{EisenbergNoe2001} gave the classical monotone clearing model, and Rogers and Veraart~\cite{RogersVeraart2013} studied default costs. Recent work has made the Tarski viewpoint explicit. Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} compute extremal Tarski fixed points in generalized Eisenberg--Noe networks with monotone piecewise-linear payment functions and default costs, obtaining a strongly polynomial algorithm for minimal clearing and a polynomial algorithm for maximal clearing. This line is the right foil for our positive result. Their model remains a payment-network model with no-overpayment/no-fraud style constraints and conservation-like structure. Our transformed bipartite map is monotone and piecewise-linear, but it is generated by price impact and health-factor liquidation. It can have super-unit feedback gain and need not satisfy the substochastic or circulation structure used by payment-network algorithms. Thus the unconditional conclusion on the sign-balanced side is CLS/Tarski membership; polynomial-time computation follows under the separate small-impact condition.
+Eisenberg and Noe~\cite{EisenbergNoe2001} gave the classical monotone clearing model, and Rogers and Veraart~\cite{RogersVeraart2013} studied default costs. Recent work has made the Tarski viewpoint explicit. Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} compute extremal Tarski fixed points in generalized Eisenberg--Noe networks with monotone piecewise-linear payment functions and default costs, obtaining a strongly polynomial algorithm for minimal clearing and a polynomial algorithm for maximal clearing. This line is the right foil for our positive result. Their model remains a payment-network model with no-overpayment/no-fraud style constraints and conservation-like structure. Our transformed bipartite map is monotone and piecewise-linear, but it is generated by price impact and health-factor liquidation. It can have super-unit feedback gain and need not satisfy the substochastic or circulation structure used by payment-network algorithms. Thus the sign-balanced side gives CLS/Tarski membership in general, polynomial time under small impact, and polynomial time for the nonnegative-drift subtraction-free abstraction of Theorem~\ref{cor:inP}; the arbitrary mixed-sign large-impact case remains a separate pivoting question.
 
 \paragraph{Fire sales and lattice equilibria.}
 Fire-sale models also connect price impact with lattice structure. Bertschinger et al.~\cite{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023} study strategic fire-sale games and show that, for a broad range of price-impact functions such as convex impact, equilibria exist and form a complete lattice; they also analyze best-response convergence and cycling. Their setting is a strategic portfolio liquidation game. Ours is a DeFi lending clearing problem with collateral/debt roles, health-factor thresholds, and a graph-theoretic sign condition. We use Tarski structure only on the sign-balanced side, and we show that odd collateral-debt cycles can implement PPAD-hard SUM/NOT fixed-point structure.
@@ -514,25 +641,25 @@ The large-impact sign-balanced regime is governed by the following abstract prob
 \[
         T(y)=\clip_{[0,u]}(Ay+c).
 \]
-We call this the \emph{Subtraction-Free Box Fixed Point} problem. It is equivalent, via Lemma~\ref{lem:gauge}, to the balanced SUM/NOT fragment and, via Theorem~\ref{thm:balancedCLS}, to the transformed sign-balanced DeFi clearing problem. Its box-LCP base is a Z-matrix; when \(\rho(A)<1\) it is an M-matrix/P-matrix case and Proposition~\ref{prop:smallimpact} gives polynomial-time computation. For \(\rho(A)\ge1\), the upper bound is the obstruction: the naive standard-LCP embedding introduces a positive \(+I\) block and leaves the Z-matrix world. Appendix~\ref{app:subtractionfree} records a structural lemma and an EOPL-style attack route, but we leave the exact complexity of the large-impact sign-balanced case open.
+We call this the \emph{Subtraction-Free Box Fixed Point} problem. It is equivalent, via Lemma~\ref{lem:gauge}, to the balanced SUM/NOT fragment and, via Theorem~\ref{thm:balancedCLS}, to the transformed sign-balanced DeFi clearing problem. Its box-LCP base is a Z-matrix; when \(\rho(A)<1\) it is an M-matrix/P-matrix case and Proposition~\ref{prop:smallimpact} gives polynomial-time computation. Theorem~\ref{cor:inP} proves a stronger large-impact positive result for \(c\ge0\): the least fixed point is computable in polynomial time by the cascade and floor peel. For arbitrary \(c\), Lemma~\ref{lem:lfpsub} proves that the least clearing's interior is always subcritical, so the remaining obstruction is not a ramping interior but the termination of a mixed-sign pivoting/cascade procedure.
 
-Two partial results narrow this gap (Appendix~\ref{app:sfbfp}). Under \(\gamma\)-spectral separation of every active or residual SCC encountered by the recursive block algorithm, the \emph{exact} least clearing is computable in polynomial time (Theorem~\ref{sfbfp:exact}). Under the bounded-magnitude assumptions listed in Corollary~\ref{sfbfp:clearing}, inverse-polynomial-accuracy \(\delta\)-clearing is also polynomial-time computable (Proposition~\ref{sfbfp:approx}). The unconditional large-impact case remains open; it reduces to an irreducible critical SCC (\(\rho=1\)) with positive drift.
+Appendix~\ref{app:subtractionfree} records the box-LCP structure and an EOPL-style attack route. Appendix~\ref{app:sfbfp} records complementary orbit-following and bounded-magnitude method statements, but these are no longer the primary source of tractability: they are useful refinements around the exact algebraic cascade. The open frontier is the mixed-sign subtraction-free problem: whether the experimentally stable symmetric cascade always terminates, or whether a cycling counterexample exists.
 
 \begin{table}[t]
 \centering
 \caption{Summary of the final frontier. The hard cells are worst-case; the small-impact guarantees are sufficient conditions.}
-\begin{tabular}{lll}
+\begin{tabular}{p{0.22\linewidth}p{0.42\linewidth}p{0.26\linewidth}}
 \toprule
  & Sign-balanced / bipartite & Unbalanced / non-bipartite \\
 \midrule
-Smooth & in CLS; small-impact P & constant-\(\delta\) PPAD-hard \\
+Smooth & CLS; P under small impact or nonnegative-drift SFBFP & constant-\(\delta\) PPAD-hard \\
 All-or-nothing & P & NP-complete \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Conclusion.}
-Collateral-only DeFi liquidation creates a native source of nonmonotone clearing feedback. Bipartite sign-balance gives a monotone Tarski instance in CLS and a polynomial-time contraction problem under small impact; removing sign-balance enables SUM/NOT circuits and yields constant-approximation PPAD-hardness. In the discrete all-or-nothing model, the same frontier separates polynomial-time balanced clearing from connected non-bipartite NP-completeness.
+Collateral-only DeFi liquidation creates a native source of nonmonotone clearing feedback. Bipartite sign-balance gives a monotone Tarski instance in CLS, polynomial-time computation under small impact, and polynomial-time subtraction-free clearing under nonnegative drift; removing sign-balance enables SUM/NOT circuits and yields constant-approximation PPAD-hardness. The remaining balanced large-impact question is now sharply mixed-sign. In the discrete all-or-nothing model, the same frontier separates polynomial-time balanced clearing from connected non-bipartite NP-completeness.
 
 \begin{thebibliography}{99}
 
@@ -947,12 +1074,12 @@ Along the bottom Kleene sequence each coordinate has a monotone phase structure:
 The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\mathbf 1^\top y/\eta\) is a natural path-following viewpoint: \(T_\eta\) is isotone and rounds down, so the potential strictly increases off fixed points and is polynomially bounded. Turning this into an \(\mathsf{EOPL}\) reduction would require a polynomial predecessor selection for the monotone Kleene path; the forward map is single-valued while predecessors need not be. We therefore record this only as an attack route. If it succeeds, the sign-balanced large-impact case would descend from CLS to an EOPL-style subclass.
 
 \paragraph{Open problem.}
-We leave open the exact complexity of large-impact sign-balanced clearing, equivalently of the Subtraction-Free Box Fixed Point problem, equivalently of the balanced SUM/NOT fragment: whether it is in P, in an EOPL-style subclass, or strictly between, for both exact and \(\delta\)-approximate clearing. Appendix~\ref{app:sfbfp} records conditional and approximate polynomial-time algorithms and isolates the remaining \(\rho=1\) critical subcase.
+The nonnegative-drift Subtraction-Free Box Fixed Point problem is in \(\mathsf P\) by Theorem~\ref{cor:inP}. We leave open the exact complexity of the mixed-sign large-impact case: for rational \(A\ge0\), arbitrary rational \(c\), and \(u>0\), is the least fixed point of \(y=\clip_{[0,u]}(Ay+c)\) computable in polynomial time? Lemma~\ref{lem:lfpsub} rules out a ramping interior at the least fixed point, so the remaining issue is the termination of a mixed-sign pivoting/cascade procedure, not Diophantine event timing. Appendix~\ref{app:sfbfp} records complementary orbit-following and bounded-magnitude method statements.
 
-\section{Subtraction-Free Box Fixed Points: An Algorithmic Refinement}
+\section{Subtraction-Free Box Fixed Points: Algorithmic Refinements}
 \label{app:sfbfp}
 
-We refine the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendices~\ref{app:zmatrix} and~\ref{app:subtractionfree}, isolating the single source of difficulty in the large-impact \((\rhospec(A)\ge1)\) regime. Let \(y^\ast\) be its least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the interior spectral bound: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})\le1\) by Lemma~\ref{lem:nonexp}.
+We record complementary algorithmic refinements for the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendices~\ref{app:zmatrix} and~\ref{app:subtractionfree}. The main unconditional polynomial-time result for \(c\ge0\) is Theorem~\ref{cor:inP}; this appendix should be read as method-level support for orbit-following, bounded-magnitude approximation, and spectrally separated exact computation. Let \(y^\ast\) be the least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the stronger interior fact of Lemma~\ref{lem:lfpsub}: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})<1\).
 
 \paragraph{SCC-DAG decomposition.}
 Form the dependency digraph with arc \(i\to j\) iff \(A_{ij}\ne0\). Let \(C_1,\dots,C_m\) be its strongly connected components, ordered so that whenever \(C_b\) reads \(C_a\) we have \(a<b\).
@@ -998,12 +1125,18 @@ It suffices to solve one irreducible block \(z=\clip_{[0,u_S]}(Bz+g)\), \(B=A_{S
 For any \(B\ge0\), the polyhedron \(P=\{z\ge0:(I-B)z\ge g\}\) is closed under coordinate-wise minimum. If \(P\ne\emptyset\), it has a least element, returned by minimizing \(\mathbf 1^\top z\) over \(P\). Moreover, \(P=\emptyset\) iff the lower-bounded relaxation \(z=\max(Bz+g,0)\) diverges to \(+\infty\).
 \end{lemma}
 
-\begin{lemma}[subcritical and LP-bounded blocks are exact]
+\begin{lemma}[subcritical upper bound]
 \label{sfbfp:sub}
-If the least element \(z^\star\) of \(P\) exists with \(z^\star\le u_S\), in particular when \(r<1\) or when \(r=1\) with nonpositive critical drift, then \(z^\star\) is the exact box fixed point, computed in \(\mathrm{poly}(|S|,L)\) time by the LP of Lemma~\ref{sfbfp:lp}. If \(z^\star\not\le u_S\), the coordinates with \(z^\star_i>u_i\) are clamped to \(u_i\) and the reduced system is re-solved, for at most \(|S|\) rounds.
+If the least element \(z^\star\) of \(P\) exists with \(z^\star\le u_S\), then \(z^\star\) is the exact box fixed point, computed in \(\mathrm{poly}(|S|,L)\) time by the LP of Lemma~\ref{sfbfp:lp}. In particular, when \(r<1\) and the residual drift is nonnegative, the unclipped solve \(\hat z=(I-B)^{-1}g\) is an upper bound on the box least fixed point and is exact if \(\hat z\le u_S\). If \(\hat z\not\le u_S\), the coordinates with \(\hat z_i>u_i\) need not be exactly the true clamp set; they may strictly over-cap and must be followed by a verification/repair step rather than accepted as final.
 \end{lemma}
 \begin{proof}
-\(z^\star\) solves the lower-bounded relaxation, whose map dominates \(T\) on \([0,u_S]\). Hence the box least fixed point is at most \(z^\star\). If \(z^\star\le u_S\), the box projection is inactive at \(z^\star\), so \(z^\star\) is itself a box fixed point and therefore equals the box least fixed point. For \(r<1\), \(I-B\) is a nonsingular \(M\)-matrix and the LCP has a unique least solution, found in polynomial time.
+\(z^\star\) solves the lower-bounded relaxation, whose map dominates \(T\) on \([0,u_S]\). Hence the box least fixed point is at most \(z^\star\). If \(z^\star\le u_S\), the box projection is inactive at \(z^\star\), so \(z^\star\) is itself a box fixed point and therefore equals the box least fixed point. For \(r<1\) and \(g\ge0\), the unclipped Kleene orbit increases to \(\hat z=(I-B)^{-1}g\), while the clipped orbit is coordinate-wise no larger. Thus \(\hat z\) is an upper bound and is exact if it lies inside the box. The over-cap warning is witnessed by
+\[
+        B=\begin{pmatrix}0&1\\0&0\end{pmatrix},\qquad
+        g=(0,10),\qquad
+        u=(5,1),
+\]
+for which \(\hat z=(10,10)\), but the box fixed point is \((1,1)\). Hence the first coordinate is falsely over-threshold in the relaxation.
 \end{proof}
 
 \begin{remark}[relaxation is an upper bound]
@@ -1023,7 +1156,7 @@ The interior increment is \(d^{(t)}=B^tg\). For \(r=1\), the semisimple peripher
 
 \begin{proposition}[\(\delta\)-approximate least fixed point]
 \label{sfbfp:approx}
-Resolving blocks in topological order, using Lemma~\ref{sfbfp:sub} for subcritical or LP-bounded blocks and bottom Kleene with Lemma~\ref{sfbfp:ramp} for ramping blocks, returns a \(\delta\)-approximate fixed point in time
+Resolving blocks in topological order, using Lemma~\ref{sfbfp:sub} for LP-bounded exact blocks and verified subcritical relaxation/repair steps, and using bottom Kleene with Lemma~\ref{sfbfp:ramp} for ramping blocks, returns a \(\delta\)-approximate fixed point in time
 \[
         O\!\left(n^2\left(nU/\delta+n\log U/\log r_{\min}\right)\right)
         =\mathrm{poly}(n,L,\|A\|_\infty,U,1/\delta).
@@ -1031,7 +1164,7 @@ Resolving blocks in topological order, using Lemma~\ref{sfbfp:sub} for subcritic
 Consequently, for normalized, polynomially bounded instances with \(U,\|A\|_\infty=\mathrm{poly}(n,L)\) and \(\delta\ge1/\mathrm{poly}(n,L)\), the running time is polynomial. For arbitrary \(A\ge0,c,u,\delta\), the algorithm is pseudo-polynomial: polynomial in \(n,L,\|A\|_\infty,U,1/\delta\).
 \end{proposition}
 \begin{proof}
-By Lemma~\ref{sfbfp:resid}, the global residual is the maximum per-block residual. Subcritical or LP-bounded blocks have residual \(0\). A ramping block either has increment \(\bar\alpha\le\delta\) or reaches a clamp within the count of Lemma~\ref{sfbfp:ramp}, after which it is re-decomposed. Iterating leaves every block with residual at most \(\delta\). The time bound follows from at most \(|S|\) clamps per block over at most \(n\) blocks, each preceded by \(O(U/\delta)\) or \(O(\log U/\log r)\) iterations of cost \(O(n^2)\).
+By Lemma~\ref{sfbfp:resid}, the global residual is the maximum per-block residual. LP-bounded blocks have residual \(0\), and subcritical over-caps are checked and repaired before a block is accepted. A ramping block either has increment \(\bar\alpha\le\delta\) or reaches a clamp within the count of Lemma~\ref{sfbfp:ramp}, after which it is re-decomposed. Iterating leaves every block with residual at most \(\delta\). The time bound follows from at most \(|S|\) accepted clamp events per block over at most \(n\) blocks, each preceded by \(O(U/\delta)\) or \(O(\log U/\log r)\) iterations of cost \(O(n^2)\); the repair steps are included in the method-level accounting.
 \end{proof}
 
 \begin{corollary}[approximate clearing for balanced large-impact markets]
@@ -1055,7 +1188,7 @@ Every block encountered by the recursive algorithm is subcritical, LP-bounded, o
 \end{proof}
 
 \paragraph{The critical event-jump.}
-The sole obstruction to bit-length polynomiality in Proposition~\ref{sfbfp:approx} and to dropping separation in Theorem~\ref{sfbfp:exact} is one subcase: an irreducible block with \(\rhospec=1\) and positive drift ramping to its box.
+For orbit-following methods, the delicate subcase is an irreducible block with \(\rhospec=1\) and positive drift ramping to its box. The algebraic cascade of Theorem~\ref{cor:inP} bypasses this timing problem when the drift is nonnegative; the event-jump below remains useful as a certified description of the trajectory and as a method-level refinement.
 
 \begin{proposition}[null-vector ramp event, proven special case]
 \label{sfbfp:jump}
@@ -1063,7 +1196,7 @@ Let \(B\ge0\) be irreducible with \(\rhospec(B)=1\), constant input \(g\), and s
 \end{proposition}
 
 \noindent\emph{Status.}
-An unconditional event-jump still requires period-\(h\) phase alignment for near-tie boundary events, rational bit-complexity of the null-vector and ratio computations, and the post-clamp residual when the reduced block is supercritical. These remain empirically passing but not used to support any theorem above.
+An unconditional orbit-following event-jump still requires period-\(h\) phase alignment for near-tie boundary events, rational bit-complexity of the null-vector and ratio computations, and the post-clamp residual when the reduced block is supercritical. These remain empirically passing but are not used to support Theorem~\ref{cor:inP}.
 
 \paragraph{Refinement of the complexity map.}
 \begin{center}
@@ -1074,8 +1207,10 @@ An unconditional event-jump still requires period-\(h\) phase alignment for near
 \hline
 sign-balanced & in \(\mathrm{CLS}\)\\
 sign-balanced \(+\) small impact \((\rhospec(A)<1)\) & \(\mathrm{P}\)\\
+sign-balanced \(+\) nonnegative drift & \(\mathrm{P}\) (Thm.~\ref{cor:inP})\\
 sign-balanced \(+\) \(\gamma\)-spectral separation & exact \(\mathrm{P}\) (Thm.~\ref{sfbfp:exact})\\
 sign-balanced, bounded caps/impact/\(1/\varepsilon\), inverse-poly \(\delta\) & poly-time \(\delta\)-approx (Prop.~\ref{sfbfp:approx})\\
+sign-balanced \(+\) mixed-sign drift & open; interior subcritical (Lemma~\ref{lem:lfpsub})\\
 non-bipartite, large impact & PPAD-hard\\
 \hline
 \end{tabular}
