@@ -37,7 +37,7 @@
 \begin{abstract}
 We study DeFi liquidation clearing with collateral-only sales and linear price impact.  Even without debt-side buy pressure, clearing can be nonmonotone: selling an asset can lower another borrower's debt value and thereby rescue that borrower.
 
-We show that the asset collateral-debt graph controls the complexity boundary.  If the graph is bipartite, a sign transform turns smooth clearing into a subtraction-free monotone clipped-affine system; approximate clearing reduces to succinct Tarski and lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\).  Small-impact instances are contractions, and a new Baker-free cascade solves the large-impact subtraction-free box problem whenever the transformed drift is nonnegative, a condition we characterize as a two-sector soft-liquidation regime.  For arbitrary drift, the least fixed point still has spectrally subcritical interior, isolating a mixed-sign pivoting question.  Conversely, non-bipartite instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
+We show that the asset collateral-debt graph controls the complexity boundary.  If the graph is bipartite, a sign transform turns smooth clearing into a subtraction-free monotone clipped-affine system; approximate clearing reduces to succinct Tarski and lies in \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\).  Small-impact instances are contractions, and a new Baker-free cascade solves the large-impact subtraction-free box problem whenever the transformed drift is nonnegative, a condition we characterize as a two-sector soft-liquidation regime.  For arbitrary drift, the least fixed point still has spectrally subcritical interior, and a monotone activation argument then removes the drift-sign restriction, placing the large-impact subtraction-free box problem in \(\mathsf P\) for all drift.  Conversely, non-bipartite instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
@@ -85,7 +85,7 @@ Let \(\GA\) be the asset borrowing graph: vertices are assets and each position 
 \[
        y=\clip_{[0,u]}(Ay+c),\qquad A\ge 0.
 \]
-Grid rounding then reduces approximate clearing to succinct Tarski, giving CLS membership.  This monotonicity is not by itself a polynomial-time algorithm for arbitrary large-impact drift; Section~\ref{sec:nonnegdrift} proves one for the nonnegative-drift subclass and leaves mixed-sign drift as a precise pivoting open problem.
+Grid rounding then reduces approximate clearing to succinct Tarski, giving CLS membership.  This monotonicity is not by itself a polynomial-time algorithm for arbitrary large-impact drift; Section~\ref{sec:nonnegdrift} proves one for the nonnegative-drift subclass and then extends it to arbitrary drift by a monotone activation argument.
 
 On the hard side, we reduce from generalized circuits using only truncated-SUM and NOT gates.  The source circuit is made intrinsically unbalanced: it contains an odd-NOT cycle in the same dependency component as a hard wire.  The liquidation gadgets preserve parity, with NOT gates becoming odd collateral-debt paths and SUM gates becoming even paths.  Hence the hard instances are non-bipartite because the encoded circuit is sign-frustrated, not because of a disconnected anchor.  Smooth approximate clearing is in PPAD, and the all-or-nothing version is polynomial for balanced instances but NP-complete for connected non-bipartite ones.
 
@@ -99,7 +99,7 @@ Thus the paper contributes a DeFi-native collateral-only clearing model, a sign-
 \toprule
  & Sign-balanced / bipartite & Unbalanced / non-bipartite \\
 \midrule
-Smooth & CLS; P under small impact or nonnegative-drift SFBFP & constant-\(\delta\) PPAD-hard \\
+Smooth & CLS; P under small impact, or large-impact SFBFP (all drift) & constant-\(\delta\) PPAD-hard \\
 All-or-nothing & P & NP-complete \\
 \bottomrule
 \end{tabular}
@@ -243,7 +243,7 @@ where \(g\) is the transformed drift.  Let \(z^\ast\) denote the least fixed poi
         I^\ast=\{i:0<z^\ast_i<u_i\},\qquad
         U^\ast=\{i:z^\ast_i=u_i\}.
 \]
-The following results sharpen the CLS upper bound in the nonnegative-drift regime. They do not apply to the non-bipartite hardness instances, where the subtraction-free condition \(B\ge0\) is absent.
+The following results sharpen the CLS upper bound in the large-impact regime, first for nonnegative drift and then, by a monotone activation argument, for arbitrary drift. They do not apply to the non-bipartite hardness instances, where the subtraction-free condition \(B\ge0\) is absent.
 
 We use standard facts about nonnegative matrices~\cite{BermanPlemmons1994}: principal-submatrix spectral radius monotonicity, Perron--Frobenius for reducible matrices, Collatz--Wielandt subinvariance, and exact rational \(M\)-matrix tests for deciding \(\rho(B')<1\). Appendix~\ref{app:zmatrix} records the associated box-LCP algebra and a counterexample showing why naive subcritical over-capping needs repair.
 
@@ -326,12 +326,57 @@ In that regime the clearing is computable in polynomial time by Theorem~\ref{cor
 The proof is a direct reading of the four drift cases in Lemma~\ref{lem:nonneg}; see Appendix~\ref{app:zmatrix}.
 
 \begin{remark}[economic scope of the nonnegative-drift result]
-The two-sector condition is strictly stronger than bipartiteness: it forbids the asset role-reversal that creates the debt-relief feedback of Fig.~\ref{fig:triangle}. Thus Theorem~\ref{cor:inP} covers a proper economic subclass of balanced markets; once a position deposits a debt-sector asset, the drift is genuinely mixed-sign and falls into Remark~\ref{rem:mixedsign}.
+The two-sector condition is strictly stronger than bipartiteness: it forbids the asset role-reversal that creates the debt-relief feedback of Fig.~\ref{fig:triangle}. Thus Theorem~\ref{cor:inP} covers a proper economic subclass of balanced markets; once a position deposits a debt-sector asset, the drift is genuinely mixed-sign and is handled by the general polynomial-time algorithm of Theorem~\ref{thm:mixedinP}.
 \end{remark}
 
-\begin{remark}[mixed-sign frontier]
+We now remove the nonnegative-drift restriction. The obstruction for mixed-sign \(g\) is the floor set, which is no longer determined by reachability; the device is to split the search into two monotone phases---an outer activation loop and an inner from-above cascade---neither of which ever reverses. Throughout we use the standard fact that for a continuous isotone self-map of a box \([0,u]\), the Kleene iterates from \(0\) increase to its least fixed point; in particular the least fixed point of any block map \(T_A\) is well defined and equals \(\lim_k T_A^k(0)\).
+
+\begin{lemma}[from-above cascade for an active block with positive least fixed point]
+\label{lem:fromabove}
+Let \(A\subseteq S\) carry an autonomous block map \(T_A(y)=\clip_{[0,u_A]}(B_{AA}y+g_A)\) with \(B_{AA}\ge0\) and \emph{arbitrary} \(g_A\), and suppose its least fixed point \(\zeta=\operatorname{lfp}(T_A)\) is strictly positive. Then \(\zeta\) is the unique fixed point of \(T_A\) and is computed in at most \(|A|\) rounds by the from-above cascade that starts with all coordinates clamped (\(C=A\)) and, in each round with \(I=A\setminus C\): solves \(\hat z_I=(\mathbb I-B_{II})^{-1}(g_I+B_{IC}u_C)\); clamps every \(i\in I\) with \(\hat z_i\ge u_i\); otherwise releases from \(C\) every \(c\) with \((Bz+g)_c<u_c\), halting when none remain.
+\end{lemma}
+
+\begin{proof}
+Since \(\zeta>0\), Lemma~\ref{lem:lfpsub} (applied to \(T_A\)) gives \(\rho(B_{I_AI_A})<1\), where \(I_A=\{i\in A:\zeta_i<u_i\}\) and \(U_A=\{i\in A:\zeta_i=u_i\}\).
+
+\emph{Uniqueness.} Any fixed point \(z'\) has \(\delta=z'-\zeta\ge0\) (least), and \(\delta_i>0\) forces \(\zeta_i<u_i\), so (using \(\zeta>0\)) \(i\in I_A\); thus \(\operatorname{supp}\delta\subseteq I_A\). On \(D=\operatorname{supp}\delta\), interiority gives \(\delta_D\le B_{DD}\delta_D\), so Collatz--Wielandt forces \(\rho(B_{DD})\ge1\), contradicting \(\rho(B_{DD})\le\rho(B_{I_AI_A})<1\) unless \(\delta=0\).
+
+\emph{Invariant \(C\supseteq U_A\).} Initially \(C=A\supseteq U_A\). Each repair point satisfies \(z\ge\zeta\) (shown below), so a released \(c\) (with \((Bz+g)_c<u_c\)) has \((B\zeta+g)_c\le(Bz+g)_c<u_c\), i.e.\ \(\zeta_c<u_c\), hence \(c\notin U_A\). Thus \(C\supseteq U_A\) throughout and \(I=A\setminus C\subseteq I_A\), whence \(\rho(B_{II})<1\): the interior is always subcritical and \((\mathbb I-B_{II})^{-1}\ge0\).
+
+\emph{Positivity by domination.} For \(C\supseteq U_A\) the true \(\zeta\) satisfies \(\zeta_I=(\mathbb I-B_{II})^{-1}(g_I+B_{IC}\zeta_C)\), so \(\hat z_I-\zeta_I=(\mathbb I-B_{II})^{-1}B_{IC}(u_C-\zeta_C)\ge0\) and \(\hat z_I\ge\zeta_I>0\). At a repair round (\(\hat z_I<u_I\)) the point \(z\) (\(=u\) on \(C\), \(=\hat z_I\in(0,u_I)\) on \(I\)) is therefore prefixed: \(T_A(z)_I=\hat z_I=z_I\) and \(T_A(z)_C\le u_C=z_C\), so \(z\ge\zeta\). This positivity replaces the \(g\ge0\) Neumann step of Lemma~\ref{thm:term}.
+
+\emph{Monotone repair, no re-clamping.} From \(C=A\) the first round is a repair. If a repair round has a nonempty release set \(\mathrm{bad}\), put \(C'=C\setminus\mathrm{bad}\supseteq U_A\) and \(I'=A\setminus C'\subseteq I_A\); the contraction \(T_{C'}(w)=\clip_{[0,u_{I'}]}(B_{I'I'}w+B_{I'C'}u_{C'}+g_{I'})\) has unique fixed point \(\hat z_{I'}(C')\), for which the current \(z|_{I'}\) is prefixed (equality on the old interior, strict decrease on \(\mathrm{bad}\)); hence \(\hat z_{I'}(C')\le z_{I'}\), so \(\hat z_c<u_c\) on \(\mathrm{bad}\) and \(\hat z_i<u_i\) on the old interior, and the next round is again a repair with \(C'\subsetneq C\). After the first repair each round removes at least one coordinate, so within \(\le|A|\) rounds the release set is empty and the returned fixed point equals \(\zeta\). Lemma~\ref{thm:term} is the \(g\ge0\) special case, where reachability already forces \(\zeta>0\).
+\end{proof}
+
+\begin{lemma}[monotone activation]
+\label{lem:activation}
+Start from \(A=\varnothing\), \(z=0\). Repeat: with \(d=Bz+g\), let \(\mathrm{act}=\{f\notin A:d_f>0\}\); if \(\mathrm{act}=\varnothing\), stop; otherwise set \(A\leftarrow A\cup\mathrm{act}\), recompute \(z_A=\operatorname{lfp}(T_A)\) by Lemma~\ref{lem:fromabove}, and set \(z=0\) off \(A\). This runs for at most \(|S|\) iterations, every block it solves has \(\operatorname{lfp}(T_A)>0\), and it returns the least fixed point \(z^\ast\).
+\end{lemma}
+
+\begin{proof}
+Maintain the invariant: \(A\subseteq A^\ast:=\operatorname{supp}(z^\ast)\); \(z=\operatorname{lfp}(T_A)\) on \(A\) and \(0\) off \(A\); \(\operatorname{lfp}(T_A)>0\); and \(z\le z^\ast\). The base case \(A=\varnothing\) is vacuous.
+
+\emph{Activations are correct.} If \(d_f=(Bz+g)_f>0\) with \(z\le z^\ast\), then \((Bz^\ast+g)_f\ge d_f>0\), so \(z^\ast_f>0\), i.e.\ \(f\in A^\ast\); hence \(A\cup\mathrm{act}\subseteq A^\ast\).
+
+\emph{The new block's least fixed point is positive.} Write \(A'=A\cup\mathrm{act}\). Activation only adds nonnegative input, so the Kleene iterates from \(0\) for \(T_{A'}\) dominate those for \(T_A\) on \(A\); hence \(\operatorname{lfp}(T_{A'})|_A\ge\operatorname{lfp}(T_A)>0\). For \(f\in\mathrm{act}\), \((B\operatorname{lfp}(T_{A'})+g)_f\ge d_f>0\), so that coordinate is positive too. Thus \(\operatorname{lfp}(T_{A'})>0\) and Lemma~\ref{lem:fromabove} applies.
+
+\emph{\(z\le z^\ast\) is preserved.} \(z^\ast_{A'}=\clip\!\big(B_{A'A'}z^\ast_{A'}+B_{A',\,S\setminus A'}z^\ast_{S\setminus A'}+g_{A'}\big)\ge\clip(B_{A'A'}z^\ast_{A'}+g_{A'})=T_{A'}(z^\ast_{A'})\), so \(z^\ast_{A'}\) is prefixed for \(T_{A'}\) and \(\operatorname{lfp}(T_{A'})\le z^\ast_{A'}\).
+
+\emph{Termination and correctness.} Each productive iteration enlarges \(A\), so there are at most \(|S|\). At termination \(d_f\le0\) off \(A\), so \(T(z)_f=\clip(d_f)=0=z_f\); on \(A\), \(z\) is a fixed point of \(T_A\). Thus \(T(z)=z\) and \(z\le z^\ast\); as \(z^\ast\) is least, \(z=z^\ast\).
+\end{proof}
+
+\begin{theorem}[mixed-sign SFBFP is in \(\mathsf P\)]
+\label{thm:mixedinP}
+For every rational \(B\ge0\), every rational drift \(g\) of arbitrary sign, and \(u>0\), the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) is computable in time polynomial in the input bit length.
+\end{theorem}
+
+\begin{proof}
+Run the activation loop of Lemma~\ref{lem:activation}: at most \(|S|\) activation steps, each invoking one from-above cascade of at most \(|S|\) rounds (Lemma~\ref{lem:fromabove}). Each round is one exact rational linear solve of polynomial bit length together with one exact \(M\)-matrix subcriticality test (Lemma~\ref{thm:mmatrix}). The total is \(O(|S|^2)\) exact solves, polynomial in the input size, and the loop returns \(z^\ast\).
+\end{proof}
+
+\begin{remark}[the mixed-sign case is settled]
 \label{rem:mixedsign}
-Lemma~\ref{lem:lfpsub} holds for arbitrary drift, so the least fixed point never has a ramping interior. What remains open is algorithmic: for mixed-sign \(g\), floors are no longer determined by reachability, uniqueness can fail, and the natural symmetric cascade can over-cap and later uncap. Exact-arithmetic experiments found no cycling and at most three state changes per coordinate on tested instances up to \(n=12\), but this is evidence rather than a theorem. Proving termination, or finding a counterexample, is the remaining pivoting question between Lemma~\ref{lem:lfpsub} and a polynomial-time algorithm for mixed-sign drift.
+Theorem~\ref{thm:mixedinP} removes the drift-sign restriction: the transformed sign-balanced clearing map \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\) is in \(\mathsf P\) for \emph{all} drift, large impact included, so Theorem~\ref{cor:inP} and its market characterization (Proposition~\ref{prop:nonnegdrift}) are the nonnegative-drift special case. The two loops never reverse---the activation set only grows (\(\le|S|\) steps) and each block's clamp set only shrinks (\(\le|S|\) rounds)---which is what eliminates the over-cap/uncap churn of a naive symmetric cascade. The two ingredients are Lemma~\ref{lem:lfpsub} (the least fixed point's interior is always subcritical, for any drift) and the from-above positivity of Lemma~\ref{lem:fromabove} (which replaces nonnegativity of the drift). Whether the simpler one-pass \emph{symmetric} cascade of the earlier experiments always terminates is a separate method-level question, not needed for this complexity result.
 \end{remark}
 
 Appendix~\ref{app:zmatrix} records the equivalent upper-bounded Z-matrix complementarity form and the method-level refinements.  This also explains why the polynomial algorithms for conservation-like monotone payment networks~\cite{BestingHoeferHuth2026} do not subsume the large-impact DeFi map: the transformed equations are monotone and piecewise-linear, but they are not substochastic payment-allocation equations.
@@ -454,8 +499,8 @@ Let \(\kappa\) be the constant from Lemma~\ref{lem:unbalancedsource} and let \(B
 
 The quantifiers in Theorem~\ref{thm:hardness} are worst-case. We do not claim that every non-bipartite borrowing graph makes clearing hard. Rather, Lemma~\ref{lem:gadgetparity} shows that the constructed hard instances are non-bipartite for an intrinsic reason: the source circuit contains odd-NOT frustration, and the liquidation gadgets preserve that parity as an odd collateral-debt cycle. The non-bipartiteness is therefore part of the hard component, not a disconnected certificate attached after the fact.
 
-\paragraph{Related work and open case.}
-Prior financial clearing and fire-sale work already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013,BestingHoeferHuth2026,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Our map is not a conservation-like payment allocation: collateral sales move prices, and the same asset may be another borrower's debt.  CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}; here NOT comes from collateral-only debt relief.  DeFi liquidation and lending work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.  The open case is mixed-sign SFBFP: Lemma~\ref{lem:lfpsub} rules out a ramping interior, but mixed-sign pivoting termination remains open; Appendix~\ref{app:sfbfp} is method-level only.
+\paragraph{Related work.}
+Prior financial clearing and fire-sale work already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013,BestingHoeferHuth2026,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Our map is not a conservation-like payment allocation: collateral sales move prices, and the same asset may be another borrower's debt.  CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}; here NOT comes from collateral-only debt relief.  DeFi liquidation and lending work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.  Mixed-sign SFBFP is in \(\mathsf P\) (Theorem~\ref{thm:mixedinP}), combining the always-subcritical interior of Lemma~\ref{lem:lfpsub} with a monotone activation reduction; Appendix~\ref{app:sfbfp} is method-level only.
 
 \begin{thebibliography}{99}
 
@@ -980,13 +1025,13 @@ Along the bottom Kleene sequence each coordinate has a monotone phase structure:
 \paragraph{An EOPL-style attack route.}
 The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\mathbf 1^\top y/\eta\) is a natural path-following viewpoint: \(T_\eta\) is isotone and rounds down, so the potential strictly increases off fixed points and is polynomially bounded. Turning this into an \(\mathsf{EOPL}\) reduction would require a polynomial predecessor selection for the monotone Kleene path; the forward map is single-valued while predecessors need not be. We therefore record this only as an attack route. If it succeeds, the sign-balanced large-impact case would descend from CLS to an EOPL-style subclass.
 
-\paragraph{Open problem.}
-The nonnegative-drift Subtraction-Free Box Fixed Point problem is in \(\mathsf P\) by Theorem~\ref{cor:inP}. We leave open the exact complexity of the mixed-sign large-impact case: for rational \(A\ge0\), arbitrary rational \(c\), and \(u>0\), is the least fixed point of \(y=\clip_{[0,u]}(Ay+c)\) computable in polynomial time? Lemma~\ref{lem:lfpsub} rules out a ramping interior at the least fixed point, so the remaining issue is the termination of a mixed-sign pivoting/cascade procedure, not Diophantine event timing. Appendix~\ref{app:sfbfp} records complementary orbit-following and bounded-magnitude method statements.
+\paragraph{Complexity of the mixed-sign case (settled).}
+The Subtraction-Free Box Fixed Point problem is in \(\mathsf P\) for arbitrary drift by Theorem~\ref{thm:mixedinP}: for rational \(A\ge0\), arbitrary rational \(c\), and \(u>0\), the least fixed point of \(y=\clip_{[0,u]}(Ay+c)\) is computable in polynomial time. The algorithm combines Lemma~\ref{lem:lfpsub} (no ramping interior at the least fixed point) with a monotone activation loop that reduces the problem to active blocks whose least fixed point is strictly positive, each solved by an exact from-above cascade; the difficulty is thus combinatorial and algebraic rather than Diophantine. The orbit-following and bounded-magnitude statements recorded below are method-level refinements around this exact algorithm, not its foundation; in particular, whether the one-pass \emph{symmetric} cascade always terminates is a separate method-level question that the activation algorithm sidesteps.
 
 \section{Subtraction-Free Box Fixed Points: Algorithmic Refinements}
 \label{app:sfbfp}
 
-We record complementary algorithmic refinements for the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendices~\ref{app:zmatrix} and~\ref{app:subtractionfree}. The main unconditional polynomial-time result for \(c\ge0\) is Theorem~\ref{cor:inP}; this appendix should be read as method-level support for orbit-following, bounded-magnitude approximation, and spectrally separated exact computation. Let \(y^\ast\) be the least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the stronger interior fact of Lemma~\ref{lem:lfpsub}: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})<1\).
+We record complementary algorithmic refinements for the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendices~\ref{app:zmatrix} and~\ref{app:subtractionfree}. The main unconditional polynomial-time result is Theorem~\ref{thm:mixedinP} for arbitrary drift; Theorem~\ref{cor:inP} is its nonnegative-drift special case. This appendix should be read as method-level support for orbit-following, bounded-magnitude approximation, and spectrally separated exact computation. Let \(y^\ast\) be the least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the stronger interior fact of Lemma~\ref{lem:lfpsub}: at \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})<1\).
 
 \paragraph{SCC-DAG decomposition.}
 Form the dependency digraph with arc \(i\to j\) iff \(A_{ij}\ne0\). Let \(C_1,\dots,C_m\) be its strongly connected components, ordered so that whenever \(C_b\) reads \(C_a\) we have \(a<b\).
@@ -1095,7 +1140,7 @@ Every block encountered by the recursive algorithm is subcritical, LP-bounded, o
 \end{proof}
 
 \paragraph{The critical event-jump.}
-For orbit-following methods, the delicate subcase is an irreducible block with \(\rhospec=1\) and positive drift ramping to its box. The algebraic cascade of Theorem~\ref{cor:inP} bypasses this timing problem when the drift is nonnegative; the event-jump below remains useful as a certified description of the trajectory and as a method-level refinement.
+For orbit-following methods, the delicate subcase is an irreducible block with \(\rhospec=1\) and positive drift ramping to its box. The algebraic cascade of Theorem~\ref{cor:inP} (nonnegative drift) and the activation algorithm of Theorem~\ref{thm:mixedinP} (arbitrary drift) bypass this timing problem; the event-jump below remains useful as a certified description of the trajectory and as a method-level refinement.
 
 \begin{proposition}[null-vector ramp event, proven special case]
 \label{sfbfp:jump}
@@ -1103,7 +1148,7 @@ Let \(B\ge0\) be irreducible with \(\rhospec(B)=1\), constant input \(g\), and s
 \end{proposition}
 
 \noindent\emph{Status.}
-An unconditional orbit-following event-jump still requires period-\(h\) phase alignment for near-tie boundary events, rational bit-complexity of the null-vector and ratio computations, and the post-clamp residual when the reduced block is supercritical. These remain empirically passing but are not used to support Theorem~\ref{cor:inP}.
+An unconditional orbit-following event-jump still requires period-\(h\) phase alignment for near-tie boundary events, rational bit-complexity of the null-vector and ratio computations, and the post-clamp residual when the reduced block is supercritical. These remain empirically passing but are not used to support Theorem~\ref{cor:inP} or Theorem~\ref{thm:mixedinP}.
 
 \paragraph{Refinement of the complexity map.}
 \begin{center}
@@ -1117,7 +1162,7 @@ sign-balanced \(+\) small impact \((\rhospec(A)<1)\) & \(\mathrm{P}\)\\
 sign-balanced \(+\) nonnegative drift & \(\mathrm{P}\) (Thm.~\ref{cor:inP})\\
 sign-balanced \(+\) \(\gamma\)-spectral separation & exact \(\mathrm{P}\) (Thm.~\ref{sfbfp:exact})\\
 sign-balanced, bounded caps/impact/\(1/\varepsilon\), inverse-poly \(\delta\) & poly-time \(\delta\)-approx (Prop.~\ref{sfbfp:approx})\\
-sign-balanced \(+\) mixed-sign drift & open; interior subcritical (Lemma~\ref{lem:lfpsub})\\
+sign-balanced \(+\) arbitrary drift & \(\mathsf P\) (Theorem~\ref{thm:mixedinP}); interior subcritical (Lemma~\ref{lem:lfpsub})\\
 non-bipartite, large impact & PPAD-hard\\
 \hline
 \end{tabular}
