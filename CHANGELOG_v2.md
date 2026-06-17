@@ -37,6 +37,13 @@ Extra safety pass: compressed the introduction/model prose and removed duplicate
 sentences. In the latest build the main text ends before the bibliography with roughly a page of
 slack rather than only a few lines.
 
+Reviewer-risk clarification pass: the abstract now says the graph gives a worst-case structural
+map rather than an instance-level iff boundary; the introduction explicitly frames the model as
+isolating the collateral-sale channel while acknowledging debt-asset buy pressure in real
+liquidations; and the SUM/NOT source theorem now cites Budish et al. Appendix D.1, Definitions
+10--11 and Theorem 3, with the simplified gate set \(G_+,G_{\neg}\) and fan-out two stated in the
+main text and appendix.
+
 ## Headline addition: mixed-sign SFBFP is in P
 
 **Where:** end of `\subsection` "Polynomial Time for Subtraction-Free Clearing" (`sec:nonnegdrift`). The

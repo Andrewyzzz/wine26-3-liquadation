@@ -37,13 +37,13 @@
 \begin{abstract}
 We study DeFi liquidation clearing with collateral-only sales and linear price impact.  Even without debt-side buy pressure, clearing can be nonmonotone: selling an asset can lower another borrower's debt value and thereby rescue that borrower.
 
-We show that the asset collateral-debt graph controls the complexity boundary.  If the graph is bipartite and price impact is linear, a sign transform turns smooth clearing into a subtraction-free clipped-affine system; a Baker-free activation cascade computes an exact clearing in polynomial time for all drift, large impact included.  The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine cascade no longer applies.  Conversely, non-bipartite linear instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
+We give a worst-case structural complexity map controlled by the asset collateral-debt graph.  If the graph is bipartite and price impact is linear, a sign transform turns smooth clearing into a subtraction-free clipped-affine system; a Baker-free activation cascade computes an exact clearing in polynomial time for all drift, large impact included.  The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine cascade no longer applies.  Conversely, non-bipartite linear instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
 \section{Introduction and Technical Overview}
 \label{sec:intro}
-DeFi lending protocols liquidate undercollateralized positions by repaying debt and selling collateral. When positions are large relative to liquidity, these collateral sales move prices, and the prices determine which positions are unhealthy. A clearing is a self-consistent vector of liquidations and prices. We study a conservative model with collateral-only sales, external debt repayment, and no debt-side buy pressure; all nonmonotonicity comes from an asset serving as collateral in one position and debt in another.
+DeFi lending protocols liquidate undercollateralized positions by repaying debt and selling collateral. When positions are large relative to liquidity, these collateral sales move prices, and the prices determine which positions are unhealthy. We isolate this collateral-sale channel in a conservative model with external debt repayment and no debt-side buy pressure; real liquidations can also create buy pressure in the debt asset. The role-reversal behind our feedback is nevertheless common: major collateral assets and stablecoins can also be borrowed, and empirical DeFi studies document liquidation cascades and shared-asset fragility~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.
 
 \paragraph{A DeFi-native negative feedback.}
 Consider three assets \(A,B,C\) and three positions
@@ -76,7 +76,7 @@ where \((A,B)\) denotes collateral \(A\) and debt \(B\). Liquidating \(P_1\) sel
 \end{figure}
 
 \paragraph{Positioning.}
-The novelty is not Tarski/lattice structure per se; it is the DeFi-specific sign structure created by collateral-only price impact and debt relief. The collateral-debt graph determines whether feedback globally aligns into a subtraction-free system (P for linear impact, CLS for monotone nonlinear impact) or implements SUM/NOT circuits and PPAD-hard fixed points.
+The novelty is not Tarski/lattice structure per se; it is the DeFi-specific sign structure created by collateral-only price impact and debt relief. Bipartiteness is a tractability guarantee, while non-bipartiteness is the worst-case structure used by our SUM/NOT hardness construction.
 
 \paragraph{Main results.}
 Let \(\GA\) be the asset borrowing graph: vertices are assets and each position contributes the edge between its collateral and debt assets.  If \(\GA\) is bipartite, flipping one side of the asset prices and complementing liquidation variables whose collateral lies on one side transforms the equations into
@@ -355,16 +355,16 @@ The ring positions use assets \(a_1,a_2,a_3\) and contribute the triangle \(a_1-
 \section{PPAD-Hardness in the Non-Bipartite Regime}
 \label{sec:hardness}
 Our hardness proof uses only two generalized-circuit gates. Let \(\T\) denote clipping to \([0,1]\). A \(\kappa\)-approximate assignment gives each wire a value in \([0,1]\) and makes every gate output differ from its prescribed value by at most \(\kappa\). This is a local notion of satisfaction: circuits may contain cycles, and no topological evaluation order is assumed.
-\begin{lemma}[SUM/NOT source]
+\begin{lemma}[SUM/NOT source, Budish et al.]
 \label{lem:source}
 There is a constant \(\kappa>0\) such that finding a \(\kappa\)-approximate solution to generalized circuits with only the gates
 \[
 G_+(u,w): y_v=\T(y_u+y_w),\qquad
-G_{1-}(u): y_v=1-y_u
+G_{\neg}(u): y_v=1-y_u
 \]
 is PPAD-complete, even with fan-out two.
 \end{lemma}
-We use Budish et al.~\cite[Appendix D, Definition 10 and Remark 7]{Budish2023} as the load-bearing source; related restricted-gate hardness appears in Filos-Ratsikas et al.~\cite{FilosRatsikas2023}.  Since truncated-SUM is already primitive, our gadgets need no high-gain chains, comparison gates, or band resets.
+Budish et al.~\cite[Appendix D.1, Definitions 10--11 and Theorem 3]{Budish2023} prove this for the simplified generalized-circuit problem with fan-out two. Related restricted-gate hardness appears in Filos-Ratsikas et al.~\cite{FilosRatsikas2023}. Since truncated-SUM is already primitive, our gadgets need no high-gain chains, comparison gates, or band resets. Corollary~\ref{cor:fragment} shows that the sign-balanced SUM/NOT fragment is in \(\mathsf P\), so hardness must come from odd-NOT sign imbalance.
 
 \begin{lemma}[unbalanced SUM/NOT source]
 \label{lem:unbalancedsource}
@@ -956,7 +956,7 @@ The close-factor bound can be met by scaling the output impact. For a writer wit
 
 \section{Source Problem and Fan-Out}
 \label{app:source}
-The restricted source problem in Lemma~\ref{lem:source} is taken as a black box. The load-bearing citation is the full version of Budish et al.~\cite[Appendix D, Definition 10 and Remark 7]{Budish2023}, which gives a self-contained reduction to simplified circuits containing only SUM and NOT gates, even with bounded fan-out. Filos-Ratsikas et al.~\cite{FilosRatsikas2023} and Rubinstein~\cite{Rubinstein2018} provide related restricted-gate and generalized-circuit hardness background. Our construction does not require bounded fan-out because debt-leg reads are non-invasive.
+The restricted source problem in Lemma~\ref{lem:source} is taken as a black box. The load-bearing citation is the full version of Budish et al.~\cite[Appendix D.1, Definitions 10--11 and Theorem 3]{Budish2023}, which proves constant-error PPAD-completeness for simplified circuits containing only \(G_+\) and \(G_{\neg}\), even with fan-out two. Filos-Ratsikas et al.~\cite{FilosRatsikas2023} and Rubinstein~\cite{Rubinstein2018} provide related restricted-gate and generalized-circuit hardness background. Our construction does not require bounded fan-out because debt-leg reads are non-invasive.
 
 The unbalanced-source promise used in Lemma~\ref{lem:unbalancedsource} is not a target-side graph tag. It is obtained before translation by adding the two gates \(a=1-s\) and \(b=\T(s+a)\) through an original source wire \(s\). This creates a signed source cycle \(s-a-b-s\) with one NOT edge. Lemma~\ref{lem:gadgetparity} then maps that source frustration to an odd collateral-debt cycle in the constructed borrowing graph.
 
