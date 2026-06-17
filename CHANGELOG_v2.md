@@ -21,6 +21,14 @@ separates the paper from Besting--Hoefer--Huth's conservation/payment-network al
 setting computes extremal fixed points in generalized Eisenberg--Noe payment networks, while this
 paper's boundary is the DeFi sign structure under price-impact feedback.
 
+Slimming pass for the 13-page main-body limit: the main text now keeps the load-bearing chain
+`lem:lfpsub -> lem:fromabove -> lem:activation -> thm:mixedinP -> cor:linearP` with complete
+proofs. The `g>=0` reachability/cascade special case (`lem:floor`, `thm:term`, `cor:inP`) remains
+stated in the main text to preserve orientation and numbering, but its proofs are moved to
+Appendix `app:nonneg-special`. The small-impact contraction proof and the two-sector
+nonnegative-drift economic characterization are also in the appendix. The compiled paper has 13
+main-text pages before references; references begin on page 14.
+
 ## Headline addition: mixed-sign SFBFP is in P
 
 **Where:** end of `\subsection` "Polynomial Time for Subtraction-Free Clearing" (`sec:nonnegdrift`). The

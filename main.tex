@@ -93,7 +93,7 @@ Thus the paper contributes a DeFi-native collateral-only clearing model, a sign-
 
 \begin{table}[t]
 \centering
-\caption{Complexity map. The hard entries are worst-case statements; small-impact entries are sufficient conditions for polynomial-time convergence.}
+\caption{Complexity map. The hard entries are worst-case statements; the nonlinear balanced entry is a Tarski/CLS upper bound beyond the affine case.}
 \label{tab:map}
 \begin{tabular}{p{0.27\linewidth}p{0.38\linewidth}p{0.25\linewidth}}
 \toprule
@@ -221,15 +221,7 @@ The same proof covers separable monotone price-impact curves, including independ
 \label{prop:smallimpact}
 In the transformed bipartite system \(T(y)=\clip_{[0,u]}(Ay+c)\), if \(\rho(A)<1\), then the clearing is unique and a \(\delta\)-clearing can be computed in time polynomial in the input size and \(\log(1/\delta)\).
 \end{proposition}
-\begin{proof}
-By Perron-Frobenius, since \(A\ge0\) and \(\rho(A)<1\), there are \(v>0\) and \(\lambda<1\) with \(Av\le \lambda v\). In the weighted sup norm \(\|r\|_v=\max_i |r_i|/v_i\), the projection \(\clip_{[0,u]}\) is nonexpansive coordinate-wise and
-\[
-   \|T(y)-T(y')\|_v\le \|A(y-y')\|_v\le \lambda \|y-y'\|_v.
-\]
-Thus \(T\) is a contraction. Banach iteration from any point converges geometrically to the unique fixed point; with rational data, the standard bit-complexity bound for iterating a contraction gives a \(\delta\)-clearing in time polynomial in the input and \(\log(1/\delta)\).
-\end{proof}
-
-The same proof gives a Lipschitz version for separable monotone price impact; see Appendix~\ref{app:zmatrix}.
+The proof is the standard weighted-sup-norm contraction argument; Appendix~\ref{app:zmatrix} also gives the Lipschitz version for separable monotone impact.
 
 \subsection{Polynomial Time for Subtraction-Free Clearing}
 \label{sec:nonnegdrift}
@@ -244,7 +236,7 @@ where \(g\) is the transformed drift.  Let \(z^\ast\) denote the least fixed poi
         I^\ast=\{i:0<z^\ast_i<u_i\},\qquad
         U^\ast=\{i:z^\ast_i=u_i\}.
 \]
-The following results sharpen the monotone upper bound into an exact polynomial-time algorithm for affine subtraction-free maps, first for nonnegative drift and then, by a monotone activation argument, for arbitrary drift. They do not apply to the non-bipartite hardness instances, where the subtraction-free condition \(B\ge0\) is absent.
+The following gives an exact polynomial-time algorithm for affine subtraction-free maps. It does not apply to the non-bipartite hardness instances, where \(B\ge0\) is absent.
 
 We use standard facts about nonnegative matrices~\cite{BermanPlemmons1994}: principal-submatrix spectral radius monotonicity, Perron--Frobenius for reducible matrices, Collatz--Wielandt subinvariance, and exact rational \(M\)-matrix tests for deciding \(\rho(B')<1\). Appendix~\ref{app:zmatrix} records the associated box-LCP algebra and a counterexample showing why naive subcritical over-capping needs repair.
 
@@ -267,70 +259,25 @@ Suppose \(M=B_{I^\ast I^\ast}\) has \(\rho(M)\ge1\). Perron--Frobenius, allowing
 On \(U^\ast\), decreasing \(z^\ast\) in nonnegative directions can only decrease the drive, so clipping gives \(T_i(z(\varepsilon))\le u_i=z_i(\varepsilon)\). On \(L^\ast\), the fixed-point condition implies \((Bz^\ast+g)_i\le0\), and the drive again only decreases, so \(T_i(z(\varepsilon))=0=z_i(\varepsilon)\). Thus \(T(z(\varepsilon))\le z(\varepsilon)\). The least fixed point of a monotone map is the least prefixed point, so \(z^\ast\le z(\varepsilon)<z^\ast\) on the support of \(\delta\), a contradiction.
 \end{proof}
 
-For \(g\ge0\), the remaining issue is the floor.  In the feeds graph, put an arc \(j\to i\) whenever \(B_{ij}>0\).
+For orientation, the nonnegative-drift case has a one-phase proof: the floor set is determined by reachability, and a single cascade solves the active block. We record this special case in Appendix~\ref{app:nonneg-special}; it is not used in the proof below. The arbitrary-drift case is harder because floors are no longer reachability-determined, and is handled by a two-phase activation algorithm.
 
 \begin{lemma}[floor equals unreachability]
 \label{lem:floor}
-Assume \(g\ge0\). Let \(A\) be the set of coordinates reachable from \(\operatorname{supp}(g)\) in the feeds graph and let \(L\) be its complement. Then \(z^\ast_L=0\), \(z^\ast_A>0\), no vertex of \(L\) is reachable from \(A\), and the restricted active block
-\[
-        z_A=\clip_{[0,u_A]}(B_{AA}z_A+g_A)
-\]
-is autonomous.
+For \(g\ge0\), the positive coordinates of the least fixed point are exactly those reachable from \(\operatorname{supp}(g)\) in the feeds graph \(j\to i\) when \(B_{ij}>0\); the restriction to this reachable set is autonomous and strictly positive.
 \end{lemma}
 
-\begin{proof}
-In the Kleene iteration from \(0\), a coordinate becomes positive exactly when it receives positive input from \(g\) or from an already positive coordinate, since all coefficients and all existing positive values are nonnegative. Hence the eventual positive coordinates are exactly the reachable set \(A\). If a coordinate in \(A\) fed a coordinate in \(L\), then the latter would also be reachable, a contradiction. Therefore \(z^\ast_L=0\), and the equations on \(A\) do not read \(L\).
-\end{proof}
-
-\begin{lemma}[active blocks are cascade-solvable]
+\begin{lemma}[nonnegative cascade]
 \label{thm:term}
-Consider an autonomous block with \(B\ge0\), \(g\ge0\), and every coordinate reachable from \(\operatorname{supp}(g)\). Then its box map has a unique fixed point, and that fixed point can be computed in \(O(n)\) cascade rounds. Each round uses exact rational linear solves and standard exact \(M\)-matrix subcriticality tests.
+An autonomous block with \(B\ge0\), \(g\ge0\), and every coordinate reachable from \(\operatorname{supp}(g)\) has a unique fixed point, computable in \(O(n)\) cascade rounds by exact rational linear solves and standard exact \(M\)-matrix tests.
 \end{lemma}
 
-\begin{proof}
-Write \(S\) for the block. By Lemma~\ref{lem:floor}, \(z^\ast>0\), so \(I^\ast=\{i:z^\ast_i<u_i\}=S\setminus U^\ast\); by Lemma~\ref{lem:lfpsub}, \(\rho(B_{I^\ast I^\ast})<1\). Maintain a tentative clamp set \(C\), initially empty, put \(I=S\setminus C\), and when \(\rho(B_{II})<1\) write
-\[
-        \hat z_I(C)=(I-B_{II})^{-1}(g_I+B_{IC}u_C).
-\]
-One round executes the first applicable case:
-\begin{itemize}[leftmargin=2.2em,itemsep=1pt]
-\item[\textup{(G1)}] if \(\rho(B_{II})\ge1\): move \emph{any one} coordinate of \(I\) into \(C\);
-\item[\textup{(G2)}] else if \(\hat z_i(C)\ge u_i\) for some \(i\in I\): move all such \(i\) into \(C\);
-\item[\textup{(R)}] else (so \(\rho(B_{II})<1\) and \(\hat z_I(C)<u_I\)): form \(z\) with \(z_C=u_C\), \(z_I=\hat z_I(C)\), and set \(\mathrm{bad}=\{c\in C:(Bz+g)_c<u_c\}\); if \(\mathrm{bad}=\varnothing\) return \(z\), otherwise remove \(\mathrm{bad}\) from \(C\).
-\end{itemize}
-The choice in \textup{(G1)} is arbitrary. We prove four invariants. First, growth terminates: as growth enlarges \(C\), the principal submatrix \(B_{II}\) only shrinks, so its spectral radius cannot increase; after at most \(|S|\) additions, a repair round occurs. Second, every repair point \(z\) is prefixed. Indeed \(z_I=\hat z_I(C)\ge0\) by the Neumann series, \(z_I<u_I\), \((Bz+g)_I=z_I\), and \(T(z)_C\le u_C=z_C\). Hence \(T(z)\le z\), and by Tarski \(z\ge z^\ast\). Third, repairs never remove a true clamp: \(z\ge z^\ast\) implies \(U^\ast\subseteq C\), and if \(c\in\mathrm{bad}\) then \((Bz^\ast+g)_c\le(Bz+g)_c<u_c\), so \(c\notin U^\ast\).
-
-Fourth, after the first repair, only repairs occur. If \(C'=C\setminus\mathrm{bad}\), then \(C'\supseteq U^\ast\) and \(I'=S\setminus C'\subseteq I^\ast\), so \(B_{I'I'}\) is subcritical. Let \(z'\) be the fixed point of the \(I'\)-subproblem with \(C'\) clamped. The old repair point \(z\) is prefixed for this subproblem; thus \(z'\le z\). Therefore every newly released \(c\in\mathrm{bad}\) satisfies \(z'_c\le(Bz'+g)_c\le(Bz+g)_c<u_c\), and all old interior coordinates remain below \(u\). Thus no coordinate is re-clamped, and the next round is again a repair with a strictly smaller \(C\). The cascade halts after at most \(2|S|\) rounds, each using one exact linear solve and one exact subcriticality test; at halt, \(T(z)=z\).
-
-Finally, the fixed point is unique. If \(z'\ge z^\ast\) is another fixed point and \(D=\{i:z'_i>z^\ast_i\}\), then \(D\subseteq I^\ast\) and \(\delta_D\le B_{DD}\delta_D\) for \(\delta=z'-z^\ast>0\) on \(D\). Collatz--Wielandt gives \(\rho(B_{DD})\ge1\), contradicting \(D\subseteq I^\ast\) and \(\rho(B_{I^\ast I^\ast})<1\). Thus the halted fixed point is \(z^\ast\).
-\end{proof}
-
-\begin{theorem}[SFBFP is in \(\mathsf P\) for nonnegative drift]
+\begin{theorem}[nonnegative-drift SFBFP]
 \label{cor:inP}
 For every rational \(B\ge0\), \(g\ge0\), and \(u>0\), the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) is computable in time polynomial in the input bit length.
 \end{theorem}
+Proofs of these three special-case statements are in Appendix~\ref{app:nonneg-special}.
 
-\begin{proof}
-Compute the reachable set \(A\) of Lemma~\ref{lem:floor} by graph search and set \(z^\ast_L=0\). The active subsystem on \(A\) is autonomous and satisfies the hypotheses of Lemma~\ref{thm:term}, so the cascade returns its unique fixed point in \(O(|A|)\) rounds. The exact linear solves have polynomial bit complexity, and each subcriticality decision is a standard exact rational \(M\)-matrix test. Combining the active solution with \(z^\ast_L=0\) gives the least fixed point of the original system.
-\end{proof}
-
-\begin{proposition}[when the transformed drift is nonnegative]
-\label{prop:nonnegdrift}
-Suppose \(\GA\) is bipartite. The transformed drift \(c\) of Lemma~\ref{lem:nonneg} can be made nonnegative exactly in the two-sector case in which no asset is used both as collateral and as debt, the bipartition is chosen with all collateral assets in \(L\) and all debt assets in \(R\), and
-\[
- p^0_k\ge s_k\sum_{i:a_i=k}\alpha_i\quad(k\in L),\qquad
- p^0_k\le M_k\quad(k\in R),\qquad
- \eps_i\ge\theta_iD_iM_{b_i}\quad(i\in[m]).
-\]
-In that regime the clearing is computable in polynomial time by Theorem~\ref{cor:inP}, even when the price impact is large (\(\rho(A)\ge1\)).
-\end{proposition}
-The proof is a direct reading of the four drift cases in Lemma~\ref{lem:nonneg}; see Appendix~\ref{app:zmatrix}.
-
-\begin{remark}[economic scope of the nonnegative-drift result]
-The two-sector condition is strictly stronger than bipartiteness: it forbids the asset role-reversal that creates the debt-relief feedback of Fig.~\ref{fig:triangle}. Thus Theorem~\ref{cor:inP} covers a proper economic subclass of balanced markets; once a position deposits a debt-sector asset, the drift is genuinely mixed-sign and is handled by the general polynomial-time algorithm of Theorem~\ref{thm:mixedinP}.
-\end{remark}
-
-We now remove the nonnegative-drift restriction. The obstruction for mixed-sign \(g\) is the floor set, which is no longer determined by reachability; the device is to split the search into two monotone phases---an outer activation loop and an inner from-above cascade---neither of which ever reverses. Throughout we use the standard fact that for a continuous isotone self-map of a box \([0,u]\), the Kleene iterates from \(0\) increase to its least fixed point; in particular the least fixed point of any block map \(T_A\) is well defined and equals \(\lim_k T_A^k(0)\).
+For arbitrary drift, the floor set is not reachability-determined. The device is to split the search into two monotone phases: an outer activation loop and an inner from-above cascade. We use that for a continuous isotone self-map of a box, the Kleene iterates from \(0\) increase to the least fixed point.
 
 \begin{lemma}[from-above cascade for an active block with positive least fixed point]
 \label{lem:fromabove}
@@ -344,9 +291,9 @@ Since \(\zeta>0\), Lemma~\ref{lem:lfpsub} (applied to \(T_A\)) gives \(\rho(B_{I
 
 \emph{Invariant \(C\supseteq U_A\).} Initially \(C=A\supseteq U_A\). Each repair point satisfies \(z\ge\zeta\) (shown below), so a released \(c\) (with \((Bz+g)_c<u_c\)) has \((B\zeta+g)_c\le(Bz+g)_c<u_c\), i.e.\ \(\zeta_c<u_c\), hence \(c\notin U_A\). Thus \(C\supseteq U_A\) throughout and \(I=A\setminus C\subseteq I_A\), whence \(\rho(B_{II})<1\): the interior is always subcritical and \((\mathbb I-B_{II})^{-1}\ge0\).
 
-\emph{Positivity by domination.} For \(C\supseteq U_A\) the true \(\zeta\) satisfies \(\zeta_I=(\mathbb I-B_{II})^{-1}(g_I+B_{IC}\zeta_C)\), so \(\hat z_I-\zeta_I=(\mathbb I-B_{II})^{-1}B_{IC}(u_C-\zeta_C)\ge0\) and \(\hat z_I\ge\zeta_I>0\). At a repair round (\(\hat z_I<u_I\)) the point \(z\) (\(=u\) on \(C\), \(=\hat z_I\in(0,u_I)\) on \(I\)) is therefore prefixed: \(T_A(z)_I=\hat z_I=z_I\) and \(T_A(z)_C\le u_C=z_C\), so \(z\ge\zeta\). This positivity replaces the \(g\ge0\) Neumann step of Lemma~\ref{thm:term}.
+\emph{Positivity by domination.} For \(C\supseteq U_A\) the true \(\zeta\) satisfies \(\zeta_I=(\mathbb I-B_{II})^{-1}(g_I+B_{IC}\zeta_C)\), so \(\hat z_I-\zeta_I=(\mathbb I-B_{II})^{-1}B_{IC}(u_C-\zeta_C)\ge0\) and \(\hat z_I\ge\zeta_I>0\). At a repair round (\(\hat z_I<u_I\)) the point \(z\) (\(=u\) on \(C\), \(=\hat z_I\in(0,u_I)\) on \(I\)) is therefore prefixed: \(T_A(z)_I=\hat z_I=z_I\) and \(T_A(z)_C\le u_C=z_C\), so \(z\ge\zeta\).
 
-\emph{Monotone repair, no re-clamping.} From \(C=A\) the first round is a repair. If a repair round has a nonempty release set \(\mathrm{bad}\), put \(C'=C\setminus\mathrm{bad}\supseteq U_A\) and \(I'=A\setminus C'\subseteq I_A\); the contraction \(T_{C'}(w)=\clip_{[0,u_{I'}]}(B_{I'I'}w+B_{I'C'}u_{C'}+g_{I'})\) has unique fixed point \(\hat z_{I'}(C')\), for which the current \(z|_{I'}\) is prefixed (equality on the old interior, strict decrease on \(\mathrm{bad}\)); hence \(\hat z_{I'}(C')\le z_{I'}\), so \(\hat z_c<u_c\) on \(\mathrm{bad}\) and \(\hat z_i<u_i\) on the old interior, and the next round is again a repair with \(C'\subsetneq C\). After the first repair each round removes at least one coordinate, so within \(\le|A|\) rounds the release set is empty and the returned fixed point equals \(\zeta\). Lemma~\ref{thm:term} is the \(g\ge0\) special case, where reachability already forces \(\zeta>0\).
+\emph{Monotone repair, no re-clamping.} From \(C=A\) the first round is a repair. If a repair round has a nonempty release set \(\mathrm{bad}\), put \(C'=C\setminus\mathrm{bad}\supseteq U_A\) and \(I'=A\setminus C'\subseteq I_A\); the contraction \(T_{C'}(w)=\clip_{[0,u_{I'}]}(B_{I'I'}w+B_{I'C'}u_{C'}+g_{I'})\) has unique fixed point \(\hat z_{I'}(C')\), for which the current \(z|_{I'}\) is prefixed (equality on the old interior, strict decrease on \(\mathrm{bad}\)); hence \(\hat z_{I'}(C')\le z_{I'}\), so \(\hat z_c<u_c\) on \(\mathrm{bad}\) and \(\hat z_i<u_i\) on the old interior, and the next round is again a repair with \(C'\subsetneq C\). After the first repair each round removes at least one coordinate, so within \(\le|A|\) rounds the release set is empty and the returned fixed point equals \(\zeta\).
 \end{proof}
 
 \begin{lemma}[monotone activation]
@@ -372,7 +319,7 @@ For every rational \(B\ge0\), every rational drift \(g\) of arbitrary sign, and 
 \end{theorem}
 
 \begin{proof}
-Run the activation loop of Lemma~\ref{lem:activation}: at most \(|S|\) activation steps, each invoking one from-above cascade of at most \(|S|\) rounds (Lemma~\ref{lem:fromabove}). Each round is one exact rational linear solve of polynomial bit length together with one exact \(M\)-matrix subcriticality test (Lemma~\ref{thm:mmatrix}). The total is \(O(|S|^2)\) exact solves, polynomial in the input size, and the loop returns \(z^\ast\).
+Run the activation loop of Lemma~\ref{lem:activation}: at most \(|S|\) activation steps, each invoking one from-above cascade of at most \(|S|\) rounds (Lemma~\ref{lem:fromabove}). Each round is one exact rational linear solve of polynomial bit length together with a standard exact rational \(M\)-matrix test for \(\rho(B')<1\)~\cite{BermanPlemmons1994}. The total is \(O(|S|^2)\) exact solves, polynomial in the input size, and the loop returns \(z^\ast\).
 \end{proof}
 
 \begin{corollary}[exact polynomial-time clearing for bipartite linear markets]
@@ -386,7 +333,7 @@ Lemma~\ref{lem:nonneg} transforms the clearing equations into \(y=\clip_{[0,u]}(
 
 \begin{remark}[the mixed-sign case is settled]
 \label{rem:mixedsign}
-Theorem~\ref{thm:mixedinP} removes the drift-sign restriction: the transformed sign-balanced clearing map \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\) is in \(\mathsf P\) for \emph{all} drift, large impact included. Consequently Corollary~\ref{cor:linearP} supersedes the linear-impact CLS upper bound of Theorem~\ref{thm:balancedCLS}; the latter remains useful for the separable nonlinear extension of Appendix~\ref{app:zmatrix}. Theorem~\ref{cor:inP} and its market characterization (Proposition~\ref{prop:nonnegdrift}) are the nonnegative-drift special case. The two loops never reverse---the activation set only grows (\(\le|S|\) steps) and each block's clamp set only shrinks (\(\le|S|\) rounds)---which is what eliminates the over-cap/uncap churn of a naive symmetric cascade. The two ingredients are Lemma~\ref{lem:lfpsub} (the least fixed point's interior is always subcritical, for any drift) and the from-above positivity of Lemma~\ref{lem:fromabove} (which replaces nonnegativity of the drift). Whether the simpler one-pass \emph{symmetric} cascade of the earlier experiments always terminates is a separate method-level question, not needed for this complexity result.
+Theorem~\ref{thm:mixedinP} puts the transformed sign-balanced linear map \(y=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), in \(\mathsf P\) for all drift, large impact included. Thus Corollary~\ref{cor:linearP} supersedes the linear-impact CLS upper bound of Theorem~\ref{thm:balancedCLS}; the latter remains useful for the separable nonlinear extension of Appendix~\ref{app:zmatrix}. The nonnegative-drift cascade (Theorem~\ref{cor:inP}) is only a special case.
 \end{remark}
 
 Appendix~\ref{app:zmatrix} records the equivalent upper-bounded Z-matrix complementarity form and the method-level refinements.  This also explains why the polynomial algorithms for conservation-like monotone payment networks~\cite{BestingHoeferHuth2026} do not subsume the large-impact DeFi map: the transformed equations are monotone and piecewise-linear, but they are not substochastic payment-allocation equations.
@@ -510,7 +457,7 @@ Let \(\kappa\) be the constant from Lemma~\ref{lem:unbalancedsource} and let \(B
 The quantifiers in Theorem~\ref{thm:hardness} are worst-case. We do not claim that every non-bipartite borrowing graph makes clearing hard. Rather, Lemma~\ref{lem:gadgetparity} shows that the constructed hard instances are non-bipartite for an intrinsic reason: the source circuit contains odd-NOT frustration, and the liquidation gadgets preserve that parity as an odd collateral-debt cycle. The non-bipartiteness is therefore part of the hard component, not a disconnected certificate attached after the fact.
 
 \paragraph{Related work.}
-Prior financial clearing and fire-sale work already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} go further for generalized Eisenberg--Noe payment networks: they compute extremal Tarski fixed points in polynomial time, and the minimal one strongly polynomially.  That setting is payment allocation with conservation structure in the Eisenberg--Noe core.  Our equations are price-impact equations: collateral sales move prices, assets may serve as both collateral and debt, and the large-impact transformed matrix can have spectral radius at least one.  The new point is the sign boundary, not generic ``least fixed point in P'': bipartite feedback becomes subtraction-free (P for linear impact, CLS for separable nonlinear impact), while odd collateral-debt cycles implement NOT and give PPAD-hardness.
+Prior financial clearing already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013}; fire-sale games show related lattice phenomena~\cite{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} go further for generalized Eisenberg--Noe payment networks: they compute extremal Tarski fixed points in polynomial time, and the minimal one strongly polynomially.  That setting is payment allocation with conservation structure in the Eisenberg--Noe core.  Our equations are price-impact equations: collateral sales move prices, assets may serve as both collateral and debt, and the large-impact transformed matrix can have spectral radius at least one.  The new point is the sign boundary, not generic ``least fixed point in P'': bipartite feedback becomes subtraction-free (P for linear impact, CLS for separable nonlinear impact), while odd collateral-debt cycles implement NOT and give PPAD-hardness.
 
 CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}; here NOT comes from collateral-only debt relief.  DeFi liquidation and lending work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.  Appendix~\ref{app:sfbfp} records method-level refinements around the exact SFBFP algorithm; it is not needed for the main P/CLS/PPAD boundary.
 
@@ -619,6 +566,51 @@ SIAM Journal on Computing \textbf{47}(3), 917--959 (2018). \doi{10.1137/15M10392
 \label{app:zmatrix}
 This appendix records mechanical extensions and algebraic details used around the sign-balanced side. None of the main support theorems depends on the exploratory material in Appendix~\ref{app:sfbfp}.
 
+\begin{proof}[Proof of Proposition~\ref{prop:smallimpact}]
+By Perron--Frobenius, since \(A\ge0\) and \(\rho(A)<1\), there are \(v>0\) and \(\lambda<1\) with \(Av\le \lambda v\). In the weighted sup norm \(\|r\|_v=\max_i |r_i|/v_i\), the projection \(\clip_{[0,u]}\) is nonexpansive coordinate-wise and
+\[
+   \|T(y)-T(y')\|_v\le \|A(y-y')\|_v\le \lambda \|y-y'\|_v .
+\]
+Thus \(T\) is a contraction, so Banach iteration converges geometrically to the unique fixed point and gives a \(\delta\)-clearing in time polynomial in the input size and \(\log(1/\delta)\).
+\end{proof}
+
+\subsection{Nonnegative-Drift Special Case}
+\label{app:nonneg-special}
+
+\begin{proof}[Proof of Lemma~\ref{lem:floor}]
+Let \(A\) be the set of coordinates reachable from \(\operatorname{supp}(g)\) in the feeds graph, and \(L\) its complement. In the Kleene iteration from \(0\), a coordinate becomes positive exactly when it receives positive input from \(g\) or from an already positive coordinate, since all coefficients and all existing positive values are nonnegative. Hence the eventual positive coordinates are exactly \(A\). If a coordinate in \(A\) fed a coordinate in \(L\), then the latter would also be reachable; therefore the restricted active block on \(A\) is autonomous.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{thm:term}]
+Write \(S\) for the block. By Lemma~\ref{lem:floor}, \(z^\ast>0\), so \(I^\ast=\{i:z^\ast_i<u_i\}=S\setminus U^\ast\); by Lemma~\ref{lem:lfpsub}, \(\rho(B_{I^\ast I^\ast})<1\). Maintain a tentative clamp set \(C\), initially empty, put \(I=S\setminus C\), and when \(\rho(B_{II})<1\) write
+\[
+        \hat z_I(C)=(I-B_{II})^{-1}(g_I+B_{IC}u_C).
+\]
+One round executes the first applicable case:
+\begin{itemize}[leftmargin=2.2em,itemsep=1pt]
+\item[\textup{(G1)}] if \(\rho(B_{II})\ge1\): move any one coordinate of \(I\) into \(C\);
+\item[\textup{(G2)}] else if \(\hat z_i(C)\ge u_i\) for some \(i\in I\): move all such \(i\) into \(C\);
+\item[\textup{(R)}] else form \(z\) with \(z_C=u_C\), \(z_I=\hat z_I(C)\), and release \(\mathrm{bad}=\{c\in C:(Bz+g)_c<u_c\}\), halting if this set is empty.
+\end{itemize}
+Growth terminates because enlarging \(C\) only shrinks the principal submatrix \(B_{II}\). Every repair point is prefixed: \(z_I=\hat z_I(C)\ge0\) by the Neumann series, \((Bz+g)_I=z_I\), and \(T(z)_C\le u_C=z_C\); hence \(z\ge z^\ast\). Thus a released coordinate cannot be in the true clamp set \(U^\ast\). After the first repair we have \(C\supseteq U^\ast\), hence the next interior \(I\subseteq I^\ast\) is subcritical. The old repair point is prefixed for the newly released subproblem, so the next solve is coordinate-wise no larger; released coordinates stay below \(u\), no re-clamping occurs, and \(C\) strictly shrinks on each later repair. Hence the cascade halts after at most \(2|S|\) rounds.
+
+At halt \(T(z)=z\). If \(z'\ge z^\ast\) is another fixed point and \(D=\{i:z'_i>z^\ast_i\}\), then \(D\subseteq I^\ast\) and \(\delta_D\le B_{DD}\delta_D\) for \(\delta=z'-z^\ast>0\) on \(D\). Collatz--Wielandt gives \(\rho(B_{DD})\ge1\), contradicting \(D\subseteq I^\ast\) and \(\rho(B_{I^\ast I^\ast})<1\). Thus the halted fixed point is unique and equals \(z^\ast\).
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{cor:inP}]
+Compute the reachable set \(A\) of Lemma~\ref{lem:floor} by graph search and set \(z^\ast_L=0\). The active subsystem on \(A\) is autonomous and satisfies the hypotheses of Lemma~\ref{thm:term}, so the cascade returns its unique fixed point in \(O(|A|)\) rounds. The exact linear solves have polynomial bit complexity, and each subcriticality decision is a standard exact rational \(M\)-matrix test. Combining the active solution with \(z^\ast_L=0\) gives the least fixed point of the original system.
+\end{proof}
+
+\begin{proposition}[when the transformed drift is nonnegative]
+\label{prop:nonnegdrift}
+Suppose \(\GA\) is bipartite. The transformed drift \(c\) of Lemma~\ref{lem:nonneg} can be made nonnegative exactly in the two-sector case in which no asset is used both as collateral and as debt, the bipartition is chosen with all collateral assets in \(L\) and all debt assets in \(R\), and
+\[
+ p^0_k\ge s_k\sum_{i:a_i=k}\alpha_i\quad(k\in L),\qquad
+ p^0_k\le M_k\quad(k\in R),\qquad
+ \eps_i\ge\theta_iD_iM_{b_i}\quad(i\in[m]).
+\]
+In that regime the clearing is computable in polynomial time by Theorem~\ref{cor:inP}, even when the price impact is large (\(\rho(A)\ge1\)).
+\end{proposition}
 \begin{proof}[Proof of Proposition~\ref{prop:nonnegdrift}]
 With all collateral assets in \(L\) and all debt assets in \(R\), the four cases of Lemma~\ref{lem:nonneg} give
 \[
@@ -628,6 +620,10 @@ c_i=1-\frac{\theta_iD_iM_{b_i}}{\eps_i}.
 \]
 The displayed inequalities are exactly nonnegativity of these entries. If an asset is used both as collateral and as debt, then under any bipartition one witnessing position has \(a_i\in R\), and Lemma~\ref{lem:nonneg} gives the strictly negative drift \(-C_iM_{a_i}/\eps_i\). Hence no bipartition can make \(c\ge0\).
 \end{proof}
+
+\begin{remark}
+The two-sector condition is strictly stronger than bipartiteness: it forbids the asset role-reversal that creates the debt-relief feedback of Fig.~\ref{fig:triangle}. Theorem~\ref{cor:inP} is therefore a useful special case of the general algorithm, not the boundary result.
+\end{remark}
 
 \paragraph{Gauge normal form for balanced SUM/NOT.}
 \begin{lemma}[gauge normal form]
