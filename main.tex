@@ -37,7 +37,7 @@
 \begin{abstract}
 We study DeFi liquidation clearing with collateral-only sales and linear price impact.  Even without debt-side buy pressure, clearing can be nonmonotone: selling an asset can lower another borrower's debt value and thereby rescue that borrower.
 
-We give a worst-case structural complexity map controlled by the asset collateral-debt graph.  If the graph is bipartite and price impact is linear, a sign transform turns smooth clearing into a subtraction-free clipped-affine system; a Baker-free activation cascade computes an exact clearing in polynomial time for all drift, large impact included.  The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine cascade no longer applies.  Conversely, non-bipartite linear instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
+We give a worst-case structural complexity map controlled by the asset collateral-debt graph.  If the graph is bipartite and price impact is linear, a sign transform turns smooth clearing into a subtraction-free clipped-affine system; an activation cascade computes an exact clearing in polynomial time for all drift, large impact included.  The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine cascade no longer applies.  Conversely, non-bipartite linear instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
@@ -347,7 +347,7 @@ and gate \(R_1\) by a controller \(W\) driven by \(\overline{\SAT}\). The correc
 \[
         (w_{R_1},U_W,w_W,u_W)=(1,4,4,1),
 \]
-so \(w_{R_1}u_W=U_W\). If the formula is satisfied, then \(\overline{\SAT}=0\), the controller turns on, and the ring has the consistent state verified in Appendix~\ref{app:discreteNP}. If the formula is unsatisfied, then \(\overline{\SAT}=1\), the controller is off, and the sink contains the impossible odd NOT equation \(r=\NOT(r)\). Hence clearings are in bijection with satisfying assignments.
+so \(U_Wu_W=w_{R_1}w_W\). If the formula is satisfied, then \(\overline{\SAT}=0\), the controller turns on, and the ring has the consistent state verified in Appendix~\ref{app:discreteNP}. If the formula is unsatisfied, then \(\overline{\SAT}=1\), the controller is off, and the sink contains the impossible odd NOT equation \(r=\NOT(r)\). Hence clearings are in bijection with satisfying assignments.
 
 The ring positions use assets \(a_1,a_2,a_3\) and contribute the triangle \(a_1-a_2-a_3-a_1\) to \(\GA\); the controller edge \(\{a_1,\sigma_{\overline{\SAT}}\}\) attaches it to the SAT component. Thus the hard instances have connected non-bipartite asset graph.
 \end{proof}
