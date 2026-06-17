@@ -29,6 +29,10 @@ Appendix `app:nonneg-special`. The small-impact contraction proof and the two-se
 nonnegative-drift economic characterization are also in the appendix. The compiled paper has 13
 main-text pages before references; references begin on page 14.
 
+Follow-up page-fit fix: the redundant complexity table was replaced by a compact in-text complexity
+map. This moves the end of the main text fully onto page 13; the bibliography starts on page 14 in
+the `tectonic --keep-logs` build.
+
 ## Headline addition: mixed-sign SFBFP is in P
 
 **Where:** end of `\subsection` "Polynomial Time for Subtraction-Free Clearing" (`sec:nonnegdrift`). The

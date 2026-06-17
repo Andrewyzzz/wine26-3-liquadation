@@ -89,24 +89,7 @@ For linear price impact, Section~\ref{sec:nonnegdrift} gives a polynomial-time e
 
 On the hard side, we reduce from generalized circuits using only truncated-SUM and NOT gates.  The source circuit is made intrinsically unbalanced: it contains an odd-NOT cycle in the same dependency component as a hard wire.  The liquidation gadgets preserve parity, with NOT gates becoming odd collateral-debt paths and SUM gates becoming even paths.  Hence the hard instances are non-bipartite because the encoded circuit is sign-frustrated, not because of a disconnected anchor.  Smooth approximate clearing is in PPAD, and the all-or-nothing version is polynomial for balanced instances but NP-complete for connected non-bipartite ones.
 
-Thus the paper contributes a DeFi-native collateral-only clearing model, a sign-balance criterion placing bipartite linear smooth clearing in exact polynomial time, a CLS upper bound for bipartite monotone nonlinear impact, an intrinsic odd-NOT-to-non-bipartite PPAD-hardness reduction, and an NP-completeness result for connected non-bipartite all-or-nothing clearing.
-
-\begin{table}[t]
-\centering
-\caption{Complexity map. The hard entries are worst-case statements; the nonlinear balanced entry is a Tarski/CLS upper bound beyond the affine case.}
-\label{tab:map}
-\begin{tabular}{p{0.27\linewidth}p{0.38\linewidth}p{0.25\linewidth}}
-\toprule
- & Sign-balanced / bipartite & Unbalanced / non-bipartite \\
-\midrule
-Smooth, linear impact & exact \(\mathsf P\) & constant-\(\delta\) PPAD-hard \\
-Smooth, separable monotone impact & CLS; \(\mathsf P\) vs.\ CLS-hard open beyond affine maps & PPAD-hard already in the linear subcase \\
-All-or-nothing & P & NP-complete \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The hardness statements are worst-case: non-bipartiteness supplies the structure needed to encode hard fixed-point instances, while small-impact instances can still be contractions and easy.
+Thus the paper contributes a DeFi-native collateral-only clearing model and the following map: bipartite linear smooth clearing is exactly polynomial-time solvable; bipartite separable monotone impact lies in CLS, with \(\mathsf P\) vs.\ CLS-hardness open beyond affine maps; non-bipartite linear smooth clearing is constant-\(\delta\) PPAD-hard; and all-or-nothing clearing is P for balanced instances but NP-complete for connected non-bipartite ones. The hardness statements are worst-case: small-impact non-bipartite instances can still be contractions.
 
 \section{Model and Sign Structure}
 \label{sec:model}
