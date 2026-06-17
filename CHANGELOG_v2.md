@@ -33,6 +33,10 @@ Follow-up page-fit fix: the redundant complexity table was replaced by a compact
 map. This moves the end of the main text fully onto page 13; the bibliography starts on page 14 in
 the `tectonic --keep-logs` build.
 
+Extra safety pass: compressed the introduction/model prose and removed duplicated explanatory
+sentences. In the latest build the main text ends before the bibliography with roughly a page of
+slack rather than only a few lines.
+
 ## Headline addition: mixed-sign SFBFP is in P
 
 **Where:** end of `\subsection` "Polynomial Time for Subtraction-Free Clearing" (`sec:nonnegdrift`). The
