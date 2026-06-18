@@ -22,6 +22,7 @@
 \newcommand{\NOT}{\mathrm{NOT}}
 \newcommand{\NOR}{\mathrm{NOR}}
 \newcommand{\SAT}{\mathsf{SAT}}
+\newcommand{\UNSAT}{\mathsf{UNSAT}}
 \newcommand{\NP}{\mathrm{NP}}
 \newcommand{\cf}{\varphi}
 \newcommand{\rhospec}{\rho}
@@ -30,20 +31,26 @@
 \begin{document}
 
 \begin{center}
-{\LARGE\bfseries Sign-Balanced Liquidation Clearing in DeFi Markets\par}
+{\LARGE\bfseries Sign Frustration and Asset Dimension in DeFi Liquidation Clearing\par}
 \end{center}
 \vspace{-0.2em}
 
 \begin{abstract}
 We study DeFi liquidation clearing with collateral-only sales and linear price impact.  Even without debt-side buy pressure, clearing can be nonmonotone because selling an asset can lower another borrower's debt value and thereby rescue that borrower.
 
-We give a worst-case structural complexity map controlled by the asset collateral-debt graph.  If the graph is bipartite and price impact is linear, a sign transform turns smooth clearing into a subtraction-free clipped-affine system. An activation cascade then computes an exact clearing in polynomial time for all drift, large impact included.  The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine cascade no longer applies.  Conversely, non-bipartite linear instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard. Smooth approximate clearing is in PPAD.  In the all-or-nothing model, balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
+We give a worst-case structural complexity map controlled by the asset collateral-debt graph and the asset dimension.  If the graph is bipartite and price impact is linear, a sign transform identifies smooth clearing with a bounded Z-matrix complementarity problem. Classical least-element complementarity theory then gives an exact polynomial-time clearing algorithm, for all drift and large impact included. Explicit monotone piecewise-linear impact also has an exact polynomial-time expansion. Independently, if the number of assets is fixed, then arbitrary linear instances are exactly solvable by enumerating the cells of a price-space hyperplane arrangement, and arbitrary constant-product instances admit a polynomial-time \(\delta\)-clearing algorithm via fixed-dimensional real algebraic geometry. The same sign transform gives a monotone Tarski map, and therefore a \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\) upper bound, for separable monotone nonlinear impact curves such as independent AMM pools, where the affine complementarity reduction no longer applies.  Conversely, non-bipartite instances can implement NOT gates and encode SUM/NOT generalized circuits, making constant-approximate clearing PPAD-hard; the hardness persists under independent constant-product AMM pricing. Smooth approximate clearing is in PPAD.  In the all-or-nothing model, position-balanced clearing is polynomial-time solvable while connected non-bipartite clearing existence is NP-complete.
 \keywords{DeFi liquidation \and Clearing \and PPAD \and CLS \and Tarski fixed points \and Financial networks}
 \end{abstract}
 
 \section{Introduction and Technical Overview}
 \label{sec:intro}
-DeFi lending protocols liquidate undercollateralized positions by repaying debt and selling collateral. When positions are large relative to liquidity, these collateral sales move prices, and the prices determine which positions are unhealthy. We isolate this collateral-sale channel in a conservative model with external debt repayment and no debt-side buy pressure. Real liquidations can also create buy pressure in the debt asset. The role-reversal behind our feedback is nevertheless common, since major collateral assets and stablecoins can also be borrowed. Empirical DeFi studies document liquidation cascades and shared-asset fragility~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.
+DeFi lending protocols liquidate undercollateralized positions by repaying debt and selling collateral. When positions are large relative to liquidity, these collateral sales move prices, and the prices determine which positions are unhealthy. We isolate this collateral-sale channel in a conservative baseline model with external debt repayment and no debt-side buy pressure. Real liquidations can also create buy pressure in the debt asset. The sign-balanced tractability side is robust to a same-asset linear buy-pressure extension, while the hardness construction uses only the collateral-sale channel. The role-reversal behind our feedback is common, since major collateral assets and stablecoins can also be borrowed. Empirical DeFi studies document liquidation cascades and shared-asset fragility~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.
+
+As a lightweight protocol calibration, we queried the Morpho public API on June 18, 2026 for Ethereum markets with the largest borrow balances~\cite{MorphoDocs}. In the resulting snapshot of 700 markets, the active collateral-loan graph is non-bipartite even after requiring at least \(\$10{,}000\) of both borrow and collateral exposure on each edge; one witness is
+\[
+   \mathrm{LBTC}\;-\;\mathrm{USDC}\;-\;\mathrm{WBTC}\;-\;\mathrm{LBTC}.
+\]
+Appendix~\ref{app:morpho} gives the reproducibility details and a scale calculation for when AMM price impact leaves the small-impact regime. This is a relevance witness for realized role reversal, not an empirical hardness claim.
 
 \paragraph{A DeFi-native negative feedback.}
 Consider three assets \(A,B,C\) and three positions
@@ -83,11 +90,11 @@ Let \(\GA\) be the asset borrowing graph. Its vertices are assets, and each posi
 \[
        y=\clip_{[0,u]}(Ay+c),\qquad A\ge 0.
 \]
-For linear impact, Section~\ref{sec:nonnegdrift} solves this subtraction-free box fixed-point problem exactly in polynomial time for arbitrary drift, so bipartite linear clearing is in \(\mathsf P\). Grid rounding gives a CLS upper bound, extended in Appendix~\ref{app:zmatrix} to separable monotone nonlinear impact such as independent AMM pools. The \(\mathsf P\) versus CLS-hardness question remains open there.
+For linear impact, Section~\ref{sec:nonnegdrift} identifies this system with a bounded Z-matrix complementarity problem. Classical least-element theory then gives an exact polynomial-time algorithm for arbitrary drift, so bipartite linear clearing is in \(\mathsf P\). A second tractable regime is orthogonal to sign-balance: Section~\ref{sec:assetdimension} gives an \(m^{O(n)}\poly(L)\)-time exact algorithm for arbitrary linear graphs when the number \(n\) of assets is fixed, and an \(m^{O(n)}\poly(L,\log(1/\delta))\)-time algorithm for arbitrary fixed-asset constant-product pools. Appendix~\ref{app:zmatrix} extends the exact \(\mathsf P\) side to explicit monotone piecewise-linear impact. Grid rounding gives a CLS upper bound for more general bipartite separable monotone nonlinear impact such as independent AMM pools. The \(\mathsf P\) versus CLS-hardness question remains open for this sign-balanced nonlinear class when the asset dimension is unbounded and the impact curves are genuinely curved or succinct.
 
-For hardness, we reduce from SUM/NOT generalized circuits whose hard component contains an odd-NOT cycle. The gadgets preserve parity. NOT gates become odd collateral-debt paths, while SUM gates become even paths. Thus non-bipartiteness is intrinsic to the hard component, not a disconnected anchor. Smooth approximate clearing is in PPAD, and all-or-nothing clearing is polynomial for balanced instances but NP-complete for connected non-bipartite ones.
+For hardness, we reduce from SUM/NOT generalized circuits whose hard component contains an odd-NOT cycle. The gadgets preserve parity. NOT gates become odd collateral-debt paths, while SUM gates become even paths. Thus non-bipartiteness is intrinsic to the hard component, not a disconnected anchor. A lifted version of the same gadgets works with constant-product AMM price curves, so the hardness is not an artifact of linear price impact. Smooth approximate clearing is in PPAD, and all-or-nothing clearing is polynomial for position-balanced instances but NP-complete for connected non-bipartite ones.
 
-Overall, bipartite linear smooth clearing is exactly polynomial-time solvable. Bipartite separable monotone impact lies in CLS. Non-bipartite linear smooth clearing is constant-\(\delta\) PPAD-hard, and all-or-nothing clearing is P for balanced instances but NP-complete for connected non-bipartite ones. The hardness statements are worst-case, since small-impact non-bipartite instances can still be contractions.
+Overall, bipartite linear smooth clearing falls into a classical tractable Z-matrix complementarity class, arbitrary linear smooth clearing is exact polynomial-time solvable for fixed asset dimension, and arbitrary fixed-asset constant-product clearing has a polynomial-time \(\delta\)-algorithm. Bipartite separable monotone impact lies in CLS. Non-bipartite smooth clearing is constant-\(\delta\) PPAD-hard under both linear and constant-product pricing, and all-or-nothing clearing is P for position-balanced instances but NP-complete for connected non-bipartite ones. The hardness statements are worst-case, since small-impact or fixed-asset-dimension non-bipartite instances can still be easy.
 
 \section{Model and Sign Structure}
 \label{sec:model}
@@ -104,7 +111,7 @@ Liquidation sells collateral only. Thus the price equation is
   p_k=\clip_{[0,M_k]}\!\left(p_k^0-s_k\sum_{i:a_i=k}\alpha_i x_i\right),
   \label{eq:price}
 \end{equation}
-where \(s_k>0\) is the impact slope and \(\alpha_i\ge0\) is the collateral sold by a fully liquidated position. With a close-factor constraint, \(0\le\alpha_i\le\varphi C_i\). Debt is repaid externally and does not create a market buy order. The clipping makes the clearing map continuous on a compact box. The hardness construction respects the close factor by adjusting market depths \(s_k\), not by overselling collateral.
+where \(s_k>0\) is the impact slope and \(\alpha_i\ge0\) is the collateral sold by a fully liquidated position. With a close-factor constraint, \(0\le\alpha_i\le\varphi C_i\). Debt is repaid externally and does not create a market buy order in the baseline model. Proposition~\ref{prop:buypressure} records a same-asset linear buy-pressure extension for the tractable sign-balanced side. The clipping makes the clearing map continuous on a compact box. The hardness construction respects the close factor by adjusting market depths \(s_k\), not by overselling collateral.
 
 A smooth exact clearing is a pair \((p,x)\) satisfying the price and liquidation equations. A \(\delta\)-clearing satisfies
 \[
@@ -172,6 +179,24 @@ z_i=\clip_{[0,1]}\!\left(-\frac{C_iM_{a_i}}{\eps_i}+\frac{\theta_iD_i}{\eps_i}q_
 All displayed coefficients of variables are nonnegative. Price equations depend only on transformed liquidation variables, and liquidation equations depend only on transformed price variables, which gives the block-off-diagonal form.
 \end{proof}
 
+\begin{proposition}[same-asset linear debt buy pressure]
+\label{prop:buypressure}
+The sign-balanced tractability result is robust to a separable linear buy-pressure term on the debt asset.  Replace \eqref{eq:price} by
+\[
+  p_k=\clip_{[0,M_k]}\!\left(
+  p_k^0
+  -s_k^-\sum_{i:a_i=k}\alpha_i x_i
+  +s_k^+\sum_{i:b_i=k}\beta_i x_i
+  \right),
+\]
+with \(s_k^-,s_k^+,\alpha_i,\beta_i\ge0\). If \(\GA\) is bipartite, the same transform as in Lemma~\ref{lem:nonneg} again gives \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\). Hence the exact polynomial-time linear result and the monotone CLS upper bound continue to hold for this extension.
+\end{proposition}
+\begin{proof}
+Only the price block changes. If \(k\in L\), then \(q_k=p_k\). A collateral-sale term with \(a_i=k\) has \(x_i=1-z_i\), contributing a positive coefficient \(s_k^-\alpha_i z_i\) after absorbing the constant. A debt-buy term with \(b_i=k\) has \(a_i\in R\), hence \(x_i=z_i\), and contributes the positive coefficient \(s_k^+\beta_i z_i\).
+
+If \(k\in R\), then \(q_k=M_k-p_k=\clip_{[0,M_k]}(M_k-r_k)\), where \(r_k\) is the unclipped price expression. A collateral-sale term with \(a_i=k\) has \(x_i=z_i\) and becomes \(+s_k^-\alpha_i z_i\) in \(M_k-r_k\). A debt-buy term with \(b_i=k\) has \(a_i\in L\), hence \(x_i=1-z_i\), and the term \(-s_k^+\beta_i(1-z_i)\) contributes a positive coefficient \(s_k^+\beta_i z_i\) after absorbing the constant. The liquidation block is unchanged from Lemma~\ref{lem:nonneg}. Thus all variable coefficients remain nonnegative.
+\end{proof}
+
 The map
 \[
        T(y)=\clip_{[0,u]}(Ay+c)
@@ -192,13 +217,13 @@ where the floor is taken coordinate-wise to the largest grid point not exceeding
 A fixed point \(y=T_\eta(y)\) is an \(\eta\)-approximate fixed point of \(T\). Coordinate-wise, \(y\le T(y)<y+\eta\), so \(\|T(y)-y\|_\infty\le \eta\le\delta\). Transforming back gives a \(\delta\)-clearing of the original market. Thus bipartite \(\delta\)-clearing reduces to the succinct Tarski fixed-point problem. Etessami, Papadimitriou, Rubinstein, and Yannakakis show that the succinct Tarski problem lies in both PPAD and PLS~\cite{EtessamiPapadimitriouRubinsteinYannakakis2020}. Fearnley, Goldberg, Hollender, and Savani show that \(\mathrm{CLS}=\mathrm{PPAD}\cap\mathrm{PLS}\)~\cite{FearnleyGoldbergHollenderSavani2021}. Therefore bipartite \(\delta\)-clearing belongs to CLS.
 \end{proof}
 
-The same proof covers separable monotone price-impact curves, including independent asset--numeraire constant-product pools. Appendix~\ref{app:zmatrix} gives the exact statement and proof.  Routed, cross-asset, or path-dependent AMM execution is outside this extension.  For non-affine separable monotone impact, whether this CLS upper bound can be improved to \(\mathsf P\), or is tight via CLS-hardness, remains open.
+The same proof covers bipartite separable monotone price-impact curves, including independent asset--numeraire constant-product pools. Appendix~\ref{app:zmatrix} gives the exact statement and proof, and also gives an exact polynomial-time expansion for explicit monotone piecewise-linear impact.  Routed, cross-asset, or path-dependent AMM execution is outside this extension.  For sign-balanced genuinely curved or succinctly represented monotone impact with unbounded asset dimension, whether this CLS upper bound can be improved to \(\mathsf P\), or is tight via CLS-hardness, remains open.
 
-\begin{proposition}[small-impact polynomial tractability]
+\begin{proposition}[small-impact contraction]
 \label{prop:smallimpact}
-In the transformed bipartite system \(T(y)=\clip_{[0,u]}(Ay+c)\), if \(\rho(A)<1\), then the clearing is unique and a \(\delta\)-clearing can be computed in time polynomial in the input size and \(\log(1/\delta)\).
+In the transformed bipartite system \(T(y)=\clip_{[0,u]}(Ay+c)\), suppose there are rational \(v>0\) and \(\lambda<1\) with \(Av\le\lambda v\). Then the clearing is unique, and Banach iteration computes a \(\delta\)-clearing in time polynomial in the input size, the bit length of \((v,\lambda)\), \(\log(1/\delta)\), and \(1/(1-\lambda)\). In particular this is polynomial whenever such a contraction certificate has polynomial bit length and inverse-polynomial gap.
 \end{proposition}
-The proof is the standard weighted-sup-norm contraction argument. Appendix~\ref{app:zmatrix} also gives the Lipschitz version for separable monotone impact.
+This is the standard small-impact \(M\)-matrix/contraction regime. The exact linear-impact algorithm below does not need a spectral gap; the gap is only for the elementary fixed-point iteration. Appendix~\ref{app:zmatrix} gives the Lipschitz version for separable monotone impact.
 
 \subsection{Polynomial Time for Subtraction-Free Clearing}
 \label{sec:nonnegdrift}
@@ -213,90 +238,29 @@ where \(g\) is the transformed drift.  Let \(z^\ast\) denote the least fixed poi
         I^\ast=\{i:0<z^\ast_i<u_i\},\qquad
         U^\ast=\{i:z^\ast_i=u_i\}.
 \]
-The following gives an exact polynomial-time algorithm for affine subtraction-free maps. It does not apply to the non-bipartite hardness instances, where \(B\ge0\) is absent.
-
-We use standard facts about nonnegative matrices~\cite{BermanPlemmons1994}, including principal-submatrix spectral radius monotonicity, Perron--Frobenius for reducible matrices, Collatz--Wielandt subinvariance, and exact rational \(M\)-matrix tests for deciding \(\rho(B')<1\). Appendix~\ref{app:zmatrix} records the associated box-LCP algebra and a counterexample showing why naive subcritical over-capping needs repair.
-
-\begin{lemma}[the least fixed point has subcritical interior]
-\label{lem:lfpsub}
-For any \(B\ge0\) and any \(g\in\R^n\), the least fixed point of \(T(z)=\clip_{[0,u]}(Bz+g)\) satisfies
+The fixed-point condition is the bounded complementarity system
 \[
-        \rho(B_{I^\ast I^\ast})<1 .
+\begin{aligned}
+0\le z\le u,\qquad w&=(I-B)z-g,\\
+z_i=0&\Rightarrow w_i\ge0,\\
+0<z_i<u_i&\Rightarrow w_i=0,\\
+z_i=u_i&\Rightarrow w_i\le0 .
+\end{aligned}
 \]
-\end{lemma}
+Since \(B\ge0\), the matrix \(I-B\) is a Z-matrix. Thus bipartite linear clearing lands in the classical least-element theory of bounded Z-matrix complementarity.
 
-\begin{proof}
-Suppose \(M=B_{I^\ast I^\ast}\) has \(\rho(M)\ge1\). Perron--Frobenius, allowing reducibility, gives a nonzero vector \(\delta\ge0\) with \(M\delta=\rho(M)\delta\). Extend \(\delta\) by zero outside \(I^\ast\). For sufficiently small \(\varepsilon>0\), the point \(z(\varepsilon)=z^\ast-\varepsilon\delta\) remains in the same open box on \(I^\ast\). On \(I^\ast\),
-\[
-        (Bz(\varepsilon)+g)_{I^\ast}
-        =z^\ast_{I^\ast}-\varepsilon M\delta
-        \le z^\ast_{I^\ast}-\varepsilon\delta
-        =z(\varepsilon)_{I^\ast}.
-\]
-On \(U^\ast\), decreasing \(z^\ast\) in nonnegative directions can only decrease the drive, so clipping gives \(T_i(z(\varepsilon))\le u_i=z_i(\varepsilon)\). On \(L^\ast\), the fixed-point condition implies \((Bz^\ast+g)_i\le0\), and the drive again only decreases, so \(T_i(z(\varepsilon))=0=z_i(\varepsilon)\). Thus \(T(z(\varepsilon))\le z(\varepsilon)\). The least fixed point of a monotone map is the least prefixed point, so \(z^\ast\le z(\varepsilon)<z^\ast\) on the support of \(\delta\), a contradiction.
-\end{proof}
+\paragraph{Relation to least-element complementarity theory.}
+Bounded Z-matrix complementarity and its least solutions are classical. Cottle and Veinott~\cite{CottleVeinott1972} characterize when a polyhedron has a least element. Mangasarian~\cite{Mangasarian1976} gives linear-programming methods for standard Z-matrix LCPs and least elements of the associated polyhedra. Chandrasekaran~\cite{Chandrasekaran1970} gives a finite method for Z-matrix LCPs, and Pang~\cite{Pang1979} treats the box case \(0\le x\le b\) with a Z-matrix, giving least-element characterizations and a direct method without a positive-definiteness or \(M\)-matrix assumption. Ahn~\cite{Ahn1983} gives iterative methods for the upper-bounded Z-matrix case, and Pang and Chandrasekaran~\cite{PangChandrasekaran1985} give a polynomially bounded pivoting algorithm. See Cottle, Pang, and Stone~\cite{CottlePangStone1992} for the standard reference.
 
-For orientation, the nonnegative-drift case has a one-phase proof. The floor set is determined by reachability, and a single cascade solves the active block. We record this special case in Appendix~\ref{app:nonneg-special}. It is not used in the proof below. The arbitrary-drift case is harder because floors are no longer reachability-determined, and is handled by a two-phase activation algorithm.
+Consequently, the polynomial-time solvability of the transformed problem is not new as an algorithmic fact. It is an instance of least-element Z-matrix complementarity. Our tractable-side contribution is the reduction that identifies bipartite collateral-only clearing with this classical class via Lemma~\ref{lem:nonneg}. This places the positive result inside the same sign boundary as the hardness theorem. To avoid relying on a particular standard-form LCP embedding, the proposition below uses the self-contained activation cascade of Appendix~\ref{app:cascade}; the classical citations explain the provenance of the method.
 
-\begin{lemma}[floor equals unreachability]
-\label{lem:floor}
-For \(g\ge0\), the positive coordinates of the least fixed point are exactly those reachable from \(\operatorname{supp}(g)\) in the feeds graph \(j\to i\) when \(B_{ij}>0\). The restriction to this reachable set is autonomous and strictly positive.
-\end{lemma}
-
-\begin{lemma}[nonnegative cascade]
-\label{thm:term}
-An autonomous block with \(B\ge0\), \(g\ge0\), and every coordinate reachable from \(\operatorname{supp}(g)\) has a unique fixed point, computable in \(O(n)\) cascade rounds by exact rational linear solves and standard exact \(M\)-matrix tests.
-\end{lemma}
-
-\begin{theorem}[nonnegative-drift SFBFP]
-\label{cor:inP}
-For every rational \(B\ge0\), \(g\ge0\), and \(u>0\), the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) is computable in time polynomial in the input bit length.
-\end{theorem}
-Proofs of these three special-case statements are in Appendix~\ref{app:nonneg-special}.
-
-For arbitrary drift, the floor set is not reachability-determined. We split the search into two monotone phases, an outer activation loop and an inner from-above cascade. We use that for a continuous isotone self-map of a box, the Kleene iterates from \(0\) increase to the least fixed point.
-
-\begin{lemma}[from-above cascade for an active block with positive least fixed point]
-\label{lem:fromabove}
-Let \(A\subseteq S\) carry an autonomous block map \(T_A(y)=\clip_{[0,u_A]}(B_{AA}y+g_A)\) with \(B_{AA}\ge0\) and \emph{arbitrary} \(g_A\), and suppose its least fixed point \(\zeta=\operatorname{lfp}(T_A)\) is strictly positive. Then \(\zeta\) is the unique fixed point of \(T_A\). It is computed in at most \(|A|\) rounds by the from-above cascade, which starts with all coordinates clamped (\(C=A\)). In a round with \(I=A\setminus C\), the algorithm solves \(\hat z_I=(\mathbb I-B_{II})^{-1}(g_I+B_{IC}u_C)\). It clamps every \(i\in I\) with \(\hat z_i\ge u_i\). If no such coordinate exists, it releases from \(C\) every \(c\) with \((Bz+g)_c<u_c\), and halts when none remain.
-\end{lemma}
-
-\begin{proof}
-Since \(\zeta>0\), Lemma~\ref{lem:lfpsub} (applied to \(T_A\)) gives \(\rho(B_{I_AI_A})<1\), where \(I_A=\{i\in A:\zeta_i<u_i\}\) and \(U_A=\{i\in A:\zeta_i=u_i\}\).
-
-\emph{Uniqueness.} Any fixed point \(z'\) has \(\delta=z'-\zeta\ge0\) (least). If \(\delta_i>0\), then \(\zeta_i<u_i\), and since \(\zeta>0\), \(i\in I_A\). Hence \(\operatorname{supp}\delta\subseteq I_A\). On \(D=\operatorname{supp}\delta\), interiority gives \(\delta_D\le B_{DD}\delta_D\). Collatz--Wielandt then forces \(\rho(B_{DD})\ge1\), contradicting \(\rho(B_{DD})\le\rho(B_{I_AI_A})<1\) unless \(\delta=0\).
-
-\emph{Invariant \(C\supseteq U_A\).} Initially \(C=A\supseteq U_A\). Each repair point satisfies \(z\ge\zeta\), as shown below. A released \(c\), with \((Bz+g)_c<u_c\), then has \((B\zeta+g)_c\le(Bz+g)_c<u_c\). Thus \(\zeta_c<u_c\) and \(c\notin U_A\). Hence \(C\supseteq U_A\) throughout and \(I=A\setminus C\subseteq I_A\). The interior is always subcritical, and \((\mathbb I-B_{II})^{-1}\ge0\).
-
-\emph{Positivity by domination.} For \(C\supseteq U_A\), the true \(\zeta\) satisfies \(\zeta_I=(\mathbb I-B_{II})^{-1}(g_I+B_{IC}\zeta_C)\). Therefore \(\hat z_I-\zeta_I=(\mathbb I-B_{II})^{-1}B_{IC}(u_C-\zeta_C)\ge0\), and \(\hat z_I\ge\zeta_I>0\). At a repair round, where \(\hat z_I<u_I\), the point \(z\) equals \(u\) on \(C\) and \(\hat z_I\in(0,u_I)\) on \(I\). It is prefixed because \(T_A(z)_I=\hat z_I=z_I\) and \(T_A(z)_C\le u_C=z_C\). Hence \(z\ge\zeta\).
-
-\emph{Monotone repair, no re-clamping.} From \(C=A\), the first round is a repair. If a repair round has a nonempty release set \(\mathrm{bad}\), put \(C'=C\setminus\mathrm{bad}\supseteq U_A\) and \(I'=A\setminus C'\subseteq I_A\). The contraction \(T_{C'}(w)=\clip_{[0,u_{I'}]}(B_{I'I'}w+B_{I'C'}u_{C'}+g_{I'})\) has a unique fixed point \(\hat z_{I'}(C')\). The current \(z|_{I'}\) is prefixed for it, with equality on the old interior and strict decrease on \(\mathrm{bad}\). Hence \(\hat z_{I'}(C')\le z_{I'}\), so \(\hat z_c<u_c\) on \(\mathrm{bad}\) and \(\hat z_i<u_i\) on the old interior. The next round is again a repair with \(C'\subsetneq C\). After the first repair, each round removes at least one coordinate, so within \(\le|A|\) rounds the release set is empty and the returned fixed point equals \(\zeta\).
-\end{proof}
-
-\begin{lemma}[monotone activation]
-\label{lem:activation}
-Start from \(A=\varnothing\), \(z=0\). With \(d=Bz+g\), let \(\mathrm{act}=\{f\notin A:d_f>0\}\). If \(\mathrm{act}=\varnothing\), stop. Otherwise set \(A\leftarrow A\cup\mathrm{act}\), recompute \(z_A=\operatorname{lfp}(T_A)\) by Lemma~\ref{lem:fromabove}, set \(z=0\) off \(A\), and repeat. This runs for at most \(|S|\) iterations, every block it solves has \(\operatorname{lfp}(T_A)>0\), and it returns the least fixed point \(z^\ast\).
-\end{lemma}
-
-\begin{proof}
-Maintain the following invariant. We have \(A\subseteq A^\ast:=\operatorname{supp}(z^\ast)\), \(z=\operatorname{lfp}(T_A)\) on \(A\) and \(0\) off \(A\), \(\operatorname{lfp}(T_A)>0\), and \(z\le z^\ast\). The base case \(A=\varnothing\) is vacuous.
-
-\emph{Activations are correct.} If \(d_f=(Bz+g)_f>0\) with \(z\le z^\ast\), then \((Bz^\ast+g)_f\ge d_f>0\). Thus \(z^\ast_f>0\), so \(f\in A^\ast\) and \(A\cup\mathrm{act}\subseteq A^\ast\).
-
-\emph{The new block's least fixed point is positive.} Write \(A'=A\cup\mathrm{act}\). Activation only adds nonnegative input, so the Kleene iterates from \(0\) for \(T_{A'}\) dominate those for \(T_A\) on \(A\). Hence \(\operatorname{lfp}(T_{A'})|_A\ge\operatorname{lfp}(T_A)>0\). For \(f\in\mathrm{act}\), \((B\operatorname{lfp}(T_{A'})+g)_f\ge d_f>0\), so that coordinate is positive too. Thus \(\operatorname{lfp}(T_{A'})>0\) and Lemma~\ref{lem:fromabove} applies.
-
-\emph{\(z\le z^\ast\) is preserved.} \(z^\ast_{A'}=\clip\!\big(B_{A'A'}z^\ast_{A'}+B_{A',\,S\setminus A'}z^\ast_{S\setminus A'}+g_{A'}\big)\ge\clip(B_{A'A'}z^\ast_{A'}+g_{A'})=T_{A'}(z^\ast_{A'})\), so \(z^\ast_{A'}\) is prefixed for \(T_{A'}\) and \(\operatorname{lfp}(T_{A'})\le z^\ast_{A'}\).
-
-\emph{Termination and correctness.} Each productive iteration enlarges \(A\), so there are at most \(|S|\). At termination \(d_f\le0\) off \(A\), so \(T(z)_f=\clip(d_f)=0=z_f\). On \(A\), \(z\) is a fixed point of \(T_A\). Thus \(T(z)=z\) and \(z\le z^\ast\). Since \(z^\ast\) is least, \(z=z^\ast\).
-\end{proof}
-
-\begin{theorem}[mixed-sign SFBFP is in \(\mathsf P\)]
+\begin{proposition}[bipartite linear clearing as bounded Z-matrix LCP]
 \label{thm:mixedinP}
-For every rational \(B\ge0\), every rational drift \(g\) of arbitrary sign, and \(u>0\), the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) is computable in time polynomial in the input bit length.
-\end{theorem}
+After the transform of Lemma~\ref{lem:nonneg}, bipartite large-impact clearing with arbitrary drift is a bounded complementarity problem on \([0,u]\) whose matrix \(I-B\) is a Z-matrix. Its least solution exists and is computable in time polynomial in the input bit length, for arbitrary \(\rho(B)\). Equivalently, the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) with \(B\ge0\) is polynomial-time computable.
+\end{proposition}
 
 \begin{proof}
-Run the activation loop of Lemma~\ref{lem:activation}. It has at most \(|S|\) activation steps, each invoking one from-above cascade of at most \(|S|\) rounds by Lemma~\ref{lem:fromabove}. Each round is one exact rational linear solve of polynomial bit length together with a standard exact rational \(M\)-matrix test for \(\rho(B')<1\)~\cite{BermanPlemmons1994}. The total is \(O(|S|^2)\) exact solves, polynomial in the input size, and the loop returns \(z^\ast\).
+The displayed system is exactly the upper-bounded Z-matrix complementarity problem for \(I-B\) and \(-g\). For a self-contained algorithm, use the activation cascade in Appendix~\ref{app:cascade}. The outer loop activates coordinates whose current drive is positive; Lemma~\ref{lem:activation} shows that at most \(n\) activations occur and that the returned point is the least fixed point. Each activated block has a strictly positive least fixed point, so Lemma~\ref{lem:fromabove} computes it by at most the block size many exact linear solves and exact \(M\)-matrix tests. The needed subcriticality fact is Lemma~\ref{lem:lfpsub}, and the exact rational \(M\)-matrix tests are summarized in Lemma~\ref{thm:mmatrix}. Hence the algorithm performs \(O(n^2)\) rational linear solves/tests of dimension at most \(n\). Gaussian elimination, linear feasibility for the \(M\)-matrix certificates, and the rational comparisons all have polynomial bit complexity. The fixed point of the monotone map is its least complementarity solution, giving the least clearing. This is the fixed-point specialization of the classical least-element methods of Chandrasekaran and Pang~\cite{Chandrasekaran1970,Pang1979}.
 \end{proof}
 
 \begin{corollary}[exact polynomial-time clearing for bipartite linear markets]
@@ -305,15 +269,102 @@ In the collateral-only linear price-impact model with rational inputs, if the as
 \end{corollary}
 
 \begin{proof}
-Lemma~\ref{lem:nonneg} transforms the clearing equations into \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\), preserving rational bit length. Theorem~\ref{thm:mixedinP} computes the least fixed point of this transformed system in polynomial time. Inverting the sign transform gives an exact clearing of the original linear-impact market.
+Lemma~\ref{lem:nonneg} transforms the clearing equations into \(y=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\), preserving rational bit length. Proposition~\ref{thm:mixedinP} identifies this transformed system as a bounded Z-matrix complementarity problem and applies classical least-element solvability. Inverting the sign transform gives an exact clearing of the original linear-impact market.
 \end{proof}
 
-\begin{remark}[the mixed-sign case is settled]
+\begin{remark}[linear sign-balanced clearing and nonlinear impact]
 \label{rem:mixedsign}
-Theorem~\ref{thm:mixedinP} puts the transformed sign-balanced linear map \(y=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), in \(\mathsf P\) for all drift, large impact included. Thus Corollary~\ref{cor:linearP} supersedes the linear-impact CLS upper bound of Theorem~\ref{thm:balancedCLS}. That upper bound remains useful for the separable nonlinear extension of Appendix~\ref{app:zmatrix}. The nonnegative-drift cascade (Theorem~\ref{cor:inP}) is only a special case.
+Proposition~\ref{thm:mixedinP} puts the transformed sign-balanced linear map \(y=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), in \(\mathsf P\) for all drift through classical bounded Z-matrix complementarity. Thus Corollary~\ref{cor:linearP} supersedes the linear-impact CLS upper bound of Theorem~\ref{thm:balancedCLS}. That upper bound remains useful for the separable nonlinear extension of Appendix~\ref{app:zmatrix}, where the affine complementarity reduction no longer applies.
 \end{remark}
 
-Appendix~\ref{app:zmatrix} records the equivalent upper-bounded Z-matrix complementarity form and the method-level refinements.  This also explains why the polynomial algorithms for conservation-like monotone payment networks~\cite{BestingHoeferHuth2026} do not subsume the large-impact DeFi map. The transformed equations are monotone and piecewise-linear, but they are not substochastic payment-allocation equations.
+Appendix~\ref{app:zmatrix} records the equivalent upper-bounded Z-matrix complementarity form and a self-contained cascade specialization.  This also explains why the polynomial algorithms for conservation-like monotone payment networks~\cite{BestingHoeferHuth2026} do not subsume the large-impact DeFi map. The transformed equations are monotone and piecewise-linear, but they are not substochastic payment-allocation equations.
+
+\subsection{Fixed Asset Dimension}
+\label{sec:assetdimension}
+
+Sign-balance is not the only tractability resource.  For linear price impact, bounded asset dimension gives an exact algorithm even on non-bipartite graphs, because the nonmonotone map is piecewise affine in price space.
+
+\begin{lemma}[price-space elimination]
+\label{lem:elim}
+In the linear smooth model, define
+\[
+   x_i(p)=\clip_{[0,1]}\!\big(h_i(p)/\eps_i\big),\qquad
+   h_i(p)=\theta_iD_i p_{b_i}-C_i p_{a_i},
+\]
+\[
+   F_k(p)=\clip_{[0,M_k]}\!\Big(p_k^0-s_k\!\!\sum_{i:a_i=k}\!\!\alpha_i\,x_i(p)\Big),
+   \qquad F:\prod_k[0,M_k]\to\prod_k[0,M_k].
+\]
+Then \((p,x)\) is a clearing iff \(p=F(p)\) and \(x=x(p)\). This holds for an arbitrary asset graph \(\GA\) and requires no sign-balance assumption.
+\end{lemma}
+\begin{proof}
+The liquidation equation makes each \(x_i\) a function of \(p_{a_i}\) and \(p_{b_i}\) alone. Substituting these functions into the price equation gives \(p=F(p)\). Conversely, any fixed point \(p^\ast\) of \(F\), together with \(x(p^\ast)\), satisfies both the liquidation and price equations.
+\end{proof}
+
+\begin{theorem}[bounded asset dimension]
+\label{thm:arrangement}
+Let \(n\) be the number of assets and \(m\) the number of positions, with rational data of bit length \(L\), on an arbitrary asset graph \(\GA\). The clearing set can be represented over \(m^{O(n)}\) explicitly computable rational polyhedral pieces, each piece described by a rational linear system and inequalities. In time \(m^{O(n)}\poly(L)\) one can enumerate all clearing-bearing pieces and output an exact rational clearing from each such piece. In particular, for each fixed \(n\), linear smooth clearing is exact polynomial-time solvable on arbitrary graphs.
+\end{theorem}
+\begin{proof}
+By Lemma~\ref{lem:elim}, it suffices to locate the fixed points of \(F\). For each position \(i\), the affine forms \(h_i(p)\) and \(h_i(p)-\eps_i\) define hyperplanes \(H_i^0,H_i^1\subset\R^n\). The arrangement of these \(2m\) hyperplanes has \(m^{O(n)}\) faces, and the faces, their sign vectors, and rational sample points can be enumerated in \(m^{O(n)}\poly(L)\) time~\cite{EdelsbrunnerORourkeSeidel1986}.
+
+On each face, the regime of every liquidation variable is fixed: \(x_i=0\), \(x_i=h_i(p)/\eps_i\), or \(x_i=1\). Boundary faces cause no ambiguity, since the adjacent formulas agree at \(h_i=0\) and \(h_i=\eps_i\). Hence every \(x_i\), and every pre-clip price update
+\[
+        \pi_k(p)=p_k^0-s_k\sum_{i:a_i=k}\alpha_i x_i(p),
+\]
+is rational affine on the face.
+
+For that face, add the at most \(2n\) price-clip hyperplanes \(\pi_k(p)=0\) and \(\pi_k(p)=M_k\). This refines it into at most \(n^{O(n)}\) subfaces, still \(m^{O(n)}\) in total. On each subface the full map is affine, \(F(p)=Ap+b\), with rational \(A,b\). A clearing on the subface is exactly a solution of
+\[
+        (I-A)p=b
+\]
+lying in the rational linear equalities and inequalities defining the subface. Exact Gaussian elimination plus rational linear feasibility decides this in \(\poly(L)\) time and, when feasible, returns a rational point of polynomial bit length. Enumerating all subfaces therefore gives the claimed \(m^{O(n)}\poly(L)\) algorithm. Since \(F\) is continuous on the compact box, Brouwer guarantees at least one subface is clearing-bearing.
+\end{proof}
+
+\begin{theorem}[bounded asset dimension with constant-product impact]
+\label{thm:arrangement-amm}
+Replace the linear price equation by independent constant-product execution-price pools
+\[
+        p_k=g_k(Q_k)=\min\!\left\{\frac{\kappa_k}{R_k+Q_k},\,M_k\right\},
+        \qquad
+        Q_k=\sum_{i:a_i=k}\alpha_i x_i,
+\]
+with rational \(R_k,\kappa_k,M_k>0\), or by any bounded-degree rational impact curve, such as the constant-product marginal price \(P_k(1+Q_k/R_k)^{-2}\), whose denominator is bounded away from zero on the relevant sales range. Let \(n\) be the number of assets and \(m\) the number of positions, with rational data of bit length \(L\), on an arbitrary asset graph \(\GA\). For every rational \(\delta>0\), a \(\delta\)-clearing can be computed in time \(m^{O(n)}\poly(L,\log(1/\delta))\). For each fixed \(n\), this is polynomial in the input size and \(\log(1/\delta)\).
+\end{theorem}
+\begin{proof}
+Use Lemma~\ref{lem:elim} with
+\[
+        F_k(p)=g_k\!\left(\sum_{i:a_i=k}\alpha_i x_i(p)\right).
+\]
+The liquidation functions \(x_i(p)=\clip_{[0,1]}(h_i(p)/\eps_i)\) are unchanged, so the same arrangement of the \(2m\) hyperplanes \(h_i(p)=0\) and \(h_i(p)=\eps_i\) has \(m^{O(n)}\) faces and is enumerable in \(m^{O(n)}\poly(L)\) time~\cite{EdelsbrunnerORourkeSeidel1986}.
+
+On a face, every \(x_i\) is rational affine in \(p\), so each aggregate \(Q_k(p)\) is rational affine. For a constant-product pool, the uncapped fixed-point equation is
+\[
+        p_k\bigl(R_k+Q_k(p)\bigr)=\kappa_k,
+\]
+a quadratic equation in the \(n\) price variables. The capped branch is \(p_k=M_k\), together with the polynomial inequality
+\[
+        \kappa_k\ge M_k\bigl(R_k+Q_k(p)\bigr);
+\]
+the uncapped branch uses the reverse inequality. Thus, after choosing one of the at most \(2^n\) cap branches, fixed because \(n\) is the dimension parameter, a clearing on the face is described by a semialgebraic system in \(n\) variables with bounded-degree rational polynomials and the rational linear equalities and inequalities defining the face.
+
+For fixed \(n\) and bounded degree, algorithms for the existential theory of the reals decide such systems and produce rational approximations to solutions in time polynomial in the coefficient bit length and \(\log(1/\eta)\), where \(\eta\) is the requested coordinate accuracy~\cite{Renegar1992,BasuPollackRoy2006}. In constant-product pools, \(R_k+Q_k(p)\ge R_k>0\), so the fixed-point map \(F\) has an effective Lipschitz bound \(K_F\) of polynomial bit length on the compact box. If the real-algebraic subroutine returns \(\hat p\) with \(\|\hat p-p^\ast\|_\infty\le\eta\) for an exact fixed point \(p^\ast\), output \(\hat x_i=x_i(\hat p)\). Then the liquidation equations hold exactly for \((\hat p,\hat x)\), and
+\[
+        \|\hat p-F(\hat p)\|_\infty
+        \le \|\hat p-p^\ast\|_\infty+\|F(p^\ast)-F(\hat p)\|_\infty
+        \le (1+K_F)\eta .
+\]
+Choosing \(\eta\le\delta/(1+K_F)\) gives a \(\delta\)-clearing. Applying the real-algebraic subroutine to each face and cap branch gives the stated \(m^{O(n)}\poly(L,\log(1/\delta))\) time bound.
+\end{proof}
+
+\begin{corollary}[two independent tractability resources]
+\label{cor:tworesources}
+Linear smooth clearing is polynomial-time solvable whenever either \(\GA\) is bipartite, for any number of assets, or the number of assets is fixed, for any graph. Constant-product smooth clearing is \(\delta\)-solvable in polynomial time for fixed asset dimension, again on arbitrary graphs. Thus fixed asset dimension rules out the PPAD-hardness mechanism in both price models. In the linear model, bipartiteness is the other tractability guarantee. In the constant-product model, our hard family uses both sign frustration and growing asset dimension; whether the unbounded sign-balanced nonlinear class is in \(\mathsf P\) or is CLS-hard remains open.
+\end{corollary}
+
+\begin{remark}
+The bounds \(m^{O(n)}\poly(L)\) and \(m^{O(n)}\poly(L,\log(1/\delta))\) are fixed-dimension polynomials, not FPT bounds \(f(n)\poly(m,L)\). On non-bipartite graphs \(F\) need not be monotone, so there need not be a least clearing; the arrangement algorithm returns clearing representatives cell by cell. In the bipartite linear case, the least clearing is recovered by comparing the finitely many returned solutions in the transformed order. Unlike Theorem~\ref{thm:arrangement}, Theorem~\ref{thm:arrangement-amm} outputs a \(\delta\)-clearing rather than an exact rational clearing, because constant-product fixed points can be algebraic. The same proof extends to bounded-degree rational impact curves whose denominators are bounded away from zero on the relevant sales intervals.
+\end{remark}
 
 \section{Membership and All-or-Nothing Clearing}
 \label{sec:membership}
@@ -321,35 +372,25 @@ Appendix~\ref{app:zmatrix} records the equivalent upper-bounded Z-matrix complem
 For rational inputs and rational \(\delta>0\), smooth \(\delta\)-clearing belongs to PPAD.
 \end{proposition}
 \begin{proof}
-The right-hand sides of the price and liquidation equations are represented by a rational piecewise-linear circuit over addition, multiplication by rational constants, and min/max gates. The price clipping and liquidation clipping make this circuit a continuous self-map of a compact rational box. A \(\delta\)-clearing is precisely an approximate fixed point of this piecewise-linear map, up to a harmless rescaling of residuals between price and liquidation coordinates. Approximate fixed points of rational piecewise-linear FIXP circuits are in PPAD via the Linear-FIXP/PPAD correspondence~\cite{EtessamiYannakakis2010}.
+For linear price impact, the right-hand sides of the price and liquidation equations are represented by a rational piecewise-linear circuit over addition, multiplication by rational constants, and min/max gates. The price clipping and liquidation clipping make this circuit a continuous self-map of a compact rational box. A \(\delta\)-clearing is precisely an approximate fixed point of this piecewise-linear map, up to a harmless rescaling of residuals between price and liquidation coordinates. Approximate fixed points of rational piecewise-linear FIXP circuits are in PPAD via the Linear-FIXP/PPAD correspondence~\cite{EtessamiYannakakis2010}. For constant-product curves, the map is instead a rational algebraic circuit whose denominators are bounded below by positive reserves on the compact domain, so the polynomial-continuity form of the same PPAD membership theorem applies~\cite[Proposition~2]{EtessamiYannakakis2010}.
 \end{proof}
 
 \begin{proposition}
 \label{prop:aonNPbalanced}
-The all-or-nothing clearing existence problem belongs to NP. If the signed feedback structure is balanced, all-or-nothing clearing can be found in polynomial time.
+The all-or-nothing clearing existence problem belongs to NP. If the position signed coupling graph \(\GX\) is balanced, all-or-nothing clearing can be found in polynomial time.
 \end{proposition}
 \begin{proof}
 For NP membership, a certificate is the set of liquidated positions. Given this set, prices are computed directly from \eqref{eq:price}, and each threshold condition can be checked. In the balanced case, after the sign transform the induced map on \(\{0,1\}^m\) is monotone. Starting from the bottom element and iterating the map, the sequence is coordinate-wise nondecreasing in the transformed order. Since every coordinate is binary, each coordinate changes at most once, and the iteration stabilizes after at most \(m\) strict changes. This is the finite-lattice analogue of the monotone-clearing algorithms used in classical financial networks. Unlike the smooth case, finiteness gives an immediate polynomial bound.
 \end{proof}
+
+For the discrete P side, balance refers to the position graph \(\GX\). Bipartiteness of \(\GA\) is a clean sufficient condition, since \(\GA\) bipartite implies \(\GX\) balanced by Lemma~\ref{lem:fwd}; under the unique-effective-writer hypotheses of Lemma~\ref{lem:conv}, the converse also holds. The hardness theorem below uses connected non-bipartite \(\GA\) instances as a worst-case obstruction, not as an instance-level iff characterization.
 
 \begin{theorem}[all-or-nothing non-bipartite hardness]
 \label{thm:discreteNP}
 The all-or-nothing clearing-existence problem is NP-complete, even for collateral-only linear price-impact markets with rational parameters of polynomial bit complexity, strict threshold margins, bounded liquidation fractions \(\alpha_i\le\varphi C_i\), and connected non-bipartite asset borrowing graph \(\GA\).
 \end{theorem}
 \begin{proof}
-Membership is Proposition~\ref{prop:aonNPbalanced}. For hardness, reduce from 3-SAT using free bistable variables and a fixed threshold-gate library for NOT, NOR, copy, and dual-rail AND/OR. Appendix~\ref{app:discreteNP} mechanically verifies this finite library with rational parameters, strict margins, close-factor-compatible sales, and the rank-one identity of Lemma~\ref{lem:rankone}.
-
-The new part is the sink gadget. From the gate layer compute \(\SAT\) and \(\overline{\SAT}\). Attach a three-position private NOT ring
-\[
-        R_1=1-R_2,\qquad R_2=1-R_3,\qquad R_3=1-R_1,
-\]
-and gate \(R_1\) by a controller \(W\) driven by \(\overline{\SAT}\). The corrected rank-one-realizable controller witness has weights
-\[
-        (w_{R_1},U_W,w_W,u_W)=(1,4,4,1),
-\]
-so \(U_Wu_W=w_{R_1}w_W\). If the formula is satisfied, then \(\overline{\SAT}=0\), the controller turns on, and the ring has the consistent state verified in Appendix~\ref{app:discreteNP}. If the formula is unsatisfied, then \(\overline{\SAT}=1\), the controller is off, and the sink contains the impossible odd NOT equation \(r=\NOT(r)\). Hence clearings are in bijection with satisfying assignments.
-
-The ring positions use assets \(a_1,a_2,a_3\) and contribute the triangle \(a_1-a_2-a_3-a_1\) to \(\GA\). The controller edge \(\{a_1,\sigma_{\overline{\SAT}}\}\) attaches it to the SAT component. Thus the hard instances have connected non-bipartite asset graph.
+Membership is Proposition~\ref{prop:aonNPbalanced}. For hardness, reduce from 3-SAT. Appendix~\ref{app:discreteNP} gives a fixed DeFi-realizable threshold library for free bits, NOT, copy, NOR, and dual-rail AND/OR, with strict margins, close-factor-compatible sales, and the rank-one constraints of shared collateral. The formula value drives a SAT-gated odd-NOT ring: if \(\SAT=1\), the controller forces a consistent ring state; if \(\SAT=0\), the controller is off and the ring reduces to \(r=\NOT(r)\). The ring assets form an odd triangle attached to the SAT component, so the hard instances are connected and non-bipartite. The construction clears exactly for satisfying assignments.
 \end{proof}
 
 \section{PPAD-Hardness in the Non-Bipartite Regime}
@@ -388,7 +429,7 @@ For each circuit wire \(v\), create an asset and encode \(y_v=2-p_v\), with inte
  \quad c=(2D-2C)/\eps .
  \label{eq:writer}
 \end{equation}
-If this writer is the unique effective writer of \(O\), then \(y_O=x\).  All gadgets have self coefficient at most \(1/2\), so each local fixed point is unique and residuals are amplified only by a universal constant.  Close-factor compliance is mechanical. A desired output weight \(\eta\) is implemented by taking \(\alpha=\varphi/2\) and output slope \(s_O=2\eta/\varphi\). Appendix~\ref{app:gadget} records the fixed parameter sheet.
+If this writer is the unique effective writer of \(O\), then \(y_O=x\).  In the linear sheet all gadgets have self coefficient at most \(1/2\), so each local fixed point is unique and residuals are amplified only by a universal constant.  The AMM sheet of Appendix~\ref{app:cpconstants} retunes the parameters after lifting the price baseline; its gain-2 self coefficient is \(<2/3\), still bounded away from one.  Close-factor compliance is mechanical. A desired output weight \(\eta\) is implemented by taking \(\alpha=\varphi/2\) and output slope \(s_O=2\eta/\varphi\). Appendix~\ref{app:gadget} records the fixed linear parameter sheet.
 
 \paragraph{The two gadgets.}
 The NOT gate \(y_O=1-y_U\) uses one writer with \(C=1,D=2,\eps=3\), giving
@@ -433,17 +474,32 @@ Let \(\kappa\) be the constant from Lemma~\ref{lem:unbalancedsource} and let \(B
 
 The quantifiers in Theorem~\ref{thm:hardness} are worst-case. We do not claim that every non-bipartite borrowing graph makes clearing hard. Rather, Lemma~\ref{lem:gadgetparity} shows that the constructed hard instances are non-bipartite for an intrinsic reason. The source circuit contains odd-NOT frustration, and the liquidation gadgets preserve that parity as an odd collateral-debt cycle. The non-bipartiteness is therefore part of the hard component, not a disconnected certificate attached after the fact.
 
-\paragraph{Related work.}
-Prior financial clearing already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013}, and fire-sale games show related lattice phenomena~\cite{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}.  Besting, Hoefer, and Huth~\cite{BestingHoeferHuth2026} go further for generalized Eisenberg--Noe payment networks. They compute extremal Tarski fixed points in polynomial time, and the minimal one strongly polynomially.  That setting is payment allocation with conservation structure in the Eisenberg--Noe core.  Our equations are price-impact equations. Collateral sales move prices, assets may serve as both collateral and debt, and the large-impact transformed matrix can have spectral radius at least one.  The new point is the sign boundary, not generic ``least fixed point in P''. Bipartite feedback becomes subtraction-free, giving P for linear impact and CLS for separable nonlinear impact, while odd collateral-debt cycles implement NOT and give PPAD-hardness.
+\begin{theorem}[AMM price-impact hardness]
+\label{thm:cphardness}
+There exists a constant \(\delta_{\mathrm{cp}}>0\) such that, in the non-bipartite regime, finding a \(\delta_{\mathrm{cp}}\)-approximate clearing remains PPAD-hard. This holds for collateral-only liquidation markets with independent constant-product marginal price curves
+\[
+        p_k=P_0(1+Q_k/R_k)^{-2}.
+\]
+The same hardness holds for execution-price curves \(p_k=P_0(1+Q_k/R_k)^{-1}\). Consequently, for a sufficiently small fixed \(\delta_{\mathrm{cp}}\), constant-product smooth clearing is PPAD-complete.
+\end{theorem}
+\begin{proof}
+Decrease the source constant \(\kappa\) in Lemma~\ref{lem:unbalancedsource}, if necessary, to a rational constant at most one. Build the same SUM/NOT instance as in Theorem~\ref{thm:hardness}, but use the lifted encoding \(y_v=\clip_{[0,1]}(P_0-p_v)\), the writer sheet, and the constant-product pools of Appendix~\ref{app:cpconstants}, with \(P_0=60/\kappa\) and \(\delta_{\mathrm{cp}}=\kappa/120\). The collateral-debt incidences and assets are unchanged, so Lemma~\ref{lem:gadgetparity} gives the same intrinsic non-bipartite cycle. Lemmas~\ref{lem:cpsheet}--\ref{lem:cpB} imply that every \(\delta_{\mathrm{cp}}\)-clearing decodes to a SUM/NOT assignment with gate violation at most \(\kappa/2<\kappa\). Thus a clearing oracle would solve the PPAD-hard promised SUM/NOT source. Membership follows from the PPAD proposition above.
+\end{proof}
 
-CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}. Here NOT comes from collateral-only debt relief.  DeFi liquidation and lending work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025}.  Appendix~\ref{app:sfbfp} records method-level refinements around the exact SFBFP algorithm. It is not needed for the main P/CLS/PPAD boundary.
+\paragraph{Related work.}
+The tractable linear side sits in classical Z-matrix complementarity and least-element theory~\cite{Mangasarian1976,Chandrasekaran1970,Pang1979,Ahn1983,PangChandrasekaran1985,CottlePangStone1992}; our role is to identify bipartite DeFi liquidation clearing as a bounded Z-matrix complementarity problem and to show what happens when the sign condition fails. Prior clearing and fire-sale work already exposes Tarski/lattice structure~\cite{EisenbergNoe2001,RogersVeraart2013,BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}, and Besting--Hoefer--Huth~\cite{BestingHoeferHuth2026} compute extremal fixed points for generalized Eisenberg--Noe payment networks; their setting is conservation-like payment allocation, while ours is price-impact clearing with possible super-unit feedback. Multi-asset fire-sale and collateral-network models study endogenous liquidation prices, existence, uniqueness, strategies, and contagion~\cite{Feinstein2017,Feinstein2019,BanerjeeFeinstein2021,PangVeraart2026}; our focus is complementary bit-complexity, sign transforms, fixed-asset algorithms, and PPAD/NP boundaries. CDS hardness uses derivative contingencies~\cite{SchuldenzuckerSeukenBattiston2017,DohnHansenKlinkby2024}, and financial-network ambiguity/threshold complexity is studied elsewhere~\cite{PappWattenhofer2020NetworkAware,PappWattenhofer2021Sequential,PappWattenhofer2021DefaultAmbiguity,CsokaHerings2018,HemenwayKhanna2016}; here NOT comes from collateral-only debt relief, with graph balance understood in the classical sense of Harary~\cite{Harary1953}. DeFi liquidation, lending, and CPMM-oracle work supplies the economic setting~\cite{Perez2021,Qin2021,LeharParlour2022,TianZhu2025,BartolettiLipparini2025,SadeghiFeinstein2026}.
 
 \begin{thebibliography}{99}
 
 \bibitem{BestingHoeferHuth2026}
 Besting, L., Hoefer, M., Huth, L.:
 Computing Tarski fixed points in financial networks.
-arXiv:2602.16387 (2026). \url{https://arxiv.org/abs/2602.16387}
+In: 43rd International Symposium on Theoretical Aspects of Computer Science (STACS 2026), LIPIcs, vol. 364, pp. 14:1--14:18. Schloss Dagstuhl (2026). \doi{10.4230/LIPIcs.STACS.2026.14}
+
+\bibitem{BasuPollackRoy2006}
+Basu, S., Pollack, R., Roy, M.-F.:
+\emph{Algorithms in Real Algebraic Geometry}, 2nd edn.
+Algorithms and Computation in Mathematics, vol. 10. Springer (2006)
 
 \bibitem{BertschingerHoeferKrogmannLenznerSchuldenzuckerWilhelmi2023}
 Bertschinger, N., Hoefer, M., Krogmann, S., Lenzner, P., Schuldenzucker, S., Wilhelmi, L.:
@@ -454,6 +510,11 @@ arXiv:2206.14429 (2023). \url{https://arxiv.org/abs/2206.14429}
 Bartoletti, M., Lipparini, E.:
 A theory of lending protocols in DeFi.
 arXiv:2506.15295 (2025). \url{https://arxiv.org/abs/2506.15295}
+
+\bibitem{BanerjeeFeinstein2021}
+Banerjee, T., Feinstein, Z.:
+Price mediated contagion through capital ratio requirements with VWAP liquidation prices.
+European Journal of Operational Research \textbf{295}(3), 1145--1160 (2021)
 
 \bibitem{DohnHansenKlinkby2024}
 Dohn, S., Hansen, K.A., Klinkby, A.:
@@ -479,10 +540,25 @@ Etessami, K., Papadimitriou, C.H., Rubinstein, A., Yannakakis, M.:
 Tarski's theorem, supermodular games, and the complexity of equilibria.
 In: 11th Innovations in Theoretical Computer Science Conference (ITCS), LIPIcs, vol. 151, pp. 18:1--18:19. Schloss Dagstuhl (2020). \doi{10.4230/LIPIcs.ITCS.2020.18}
 
+\bibitem{EdelsbrunnerORourkeSeidel1986}
+Edelsbrunner, H., O'Rourke, J., Seidel, R.:
+Constructing arrangements of lines and hyperplanes with applications.
+SIAM Journal on Computing \textbf{15}(2), 341--363 (1986). \doi{10.1137/0215024}
+
 \bibitem{FearnleyGoldbergHollenderSavani2021}
 Fearnley, J., Goldberg, P.W., Hollender, A., Savani, R.:
 The complexity of gradient descent: CLS = PPAD $\cap$ PLS.
 In: Proceedings of the 53rd Annual ACM SIGACT Symposium on Theory of Computing (STOC), pp. 46--59. ACM (2021). \doi{10.1145/3406325.3451052}
+
+\bibitem{Feinstein2017}
+Feinstein, Z.:
+Financial contagion and asset liquidation strategies.
+Operations Research Letters \textbf{45}(2), 109--114 (2017)
+
+\bibitem{Feinstein2019}
+Feinstein, Z.:
+Obligations with physical delivery in a multi-layered financial network.
+SIAM Journal on Financial Mathematics \textbf{10}(4), 877--906 (2019)
 
 \bibitem{EtessamiYannakakis2010}
 Etessami, K., Yannakakis, M.:
@@ -509,6 +585,21 @@ Tian, P., Zhu, Y.:
 Liquidation mechanisms and price impacts in DeFi.
 Bank of Canada Staff Working Paper 2025-12 (2025). \doi{10.34989/swp-2025-12}
 
+\bibitem{CsokaHerings2018}
+Cs\'oka, P., Herings, P.J.J.:
+Decentralized clearing in financial networks.
+Management Science \textbf{64}(10), 4681--4699 (2018)
+
+\bibitem{Harary1953}
+Harary, F.:
+On the notion of balance of a signed graph.
+Michigan Mathematical Journal \textbf{2}(2), 143--146 (1953)
+
+\bibitem{HemenwayKhanna2016}
+Hemenway, B., Khanna, S.:
+Sensitivity and computational complexity in financial networks.
+Algorithmica \textbf{76}, 444--472 (2016)
+
 \bibitem{EisenbergNoe2001}
 Eisenberg, L., Noe, T.H.:
 Systemic risk in financial systems.
@@ -518,6 +609,11 @@ Management Science \textbf{47}(2), 236--249 (2001)
 Rogers, L.C.G., Veraart, L.A.M.:
 Failure and rescue in an interbank network.
 Management Science \textbf{59}(4), 882--898 (2013)
+
+\bibitem{Renegar1992}
+Renegar, J.:
+On the computational complexity and geometry of the first-order theory of the reals. Parts I--III.
+Journal of Symbolic Computation \textbf{13}(3), 255--352 (1992)
 
 \bibitem{SchuldenzuckerSeukenBattiston2017}
 Schuldenzucker, S., Seuken, S., Battiston, S.:
@@ -529,36 +625,156 @@ Berman, A., Plemmons, R.J.:
 Nonnegative Matrices in the Mathematical Sciences.
 SIAM Classics in Applied Mathematics (1994)
 
+\bibitem{FiedlerPtak1962}
+Fiedler, M., Ptak, V.:
+On matrices with non-positive off-diagonal elements and positive principal minors.
+Czechoslovak Mathematical Journal \textbf{12}(87), 382--400 (1962)
+
+\bibitem{Chandrasekaran1970}
+Chandrasekaran, R.:
+A special case of the complementary pivot problem.
+Opsearch \textbf{7}, 263--268 (1970)
+
+\bibitem{CottleVeinott1972}
+Cottle, R.W., Veinott Jr., A.F.:
+Polyhedral sets having a least element.
+Mathematical Programming \textbf{3}, 238--249 (1972)
+
+\bibitem{Mangasarian1976}
+Mangasarian, O.L.:
+Linear complementarity problems solvable by a single linear program.
+Mathematical Programming \textbf{10}, 263--270 (1976)
+
+\bibitem{Pang1979}
+Pang, J.-S.:
+On a class of least-element complementarity problems.
+Mathematical Programming \textbf{16}, 111--126 (1979)
+
+\bibitem{Ahn1983}
+Ahn, B.H.:
+Iterative methods for linear complementarity problems with upperbounds on primary variables.
+Mathematical Programming \textbf{26}, 295--315 (1983)
+
+\bibitem{PangChandrasekaran1985}
+Pang, J.-S., Chandrasekaran, R.:
+Linear complementarity problems solvable by a polynomially bounded pivoting algorithm.
+Mathematical Programming Study \textbf{25}, 13--27 (1985)
+
+\bibitem{PangVeraart2026}
+Pang, J.-S., Veraart, L.A.M.:
+Collateralized financial networks and interacting fire sales.
+SIAM Journal on Financial Mathematics (2026)
+
+\bibitem{CottlePangStone1992}
+Cottle, R.W., Pang, J.-S., Stone, R.E.:
+The Linear Complementarity Problem.
+Academic Press (1992)
+
+\bibitem{PappWattenhofer2020NetworkAware}
+Papp, P.A., Wattenhofer, R.:
+Network-aware strategies in financial systems.
+arXiv:2002.07566 (2020). \url{https://arxiv.org/abs/2002.07566}
+
+\bibitem{PappWattenhofer2021Sequential}
+Papp, P.A., Wattenhofer, R.:
+Sequential defaulting in financial networks.
+arXiv:2011.10485 (2020). \url{https://arxiv.org/abs/2011.10485}
+
+\bibitem{PappWattenhofer2021DefaultAmbiguity}
+Papp, P.A., Wattenhofer, R.:
+Default ambiguity: finding the best solution to the clearing problem.
+arXiv:2002.07741 (2020). \url{https://arxiv.org/abs/2002.07741}
+
 \bibitem{Rubinstein2018}
 Rubinstein, A.:
 Inapproximability of Nash equilibrium.
 SIAM Journal on Computing \textbf{47}(3), 917--959 (2018). \doi{10.1137/15M1039274}
+
+\bibitem{SadeghiFeinstein2026}
+Sadeghi, A., Feinstein, Z.:
+Liquidation dynamics in DeFi and the role of transaction fees.
+arXiv:2602.12104 (2026). \url{https://arxiv.org/abs/2602.12104}
+
+\bibitem{MorphoDocs}
+Morpho Association:
+Morpho Blue documentation: Get Data.
+\url{https://docs.morpho.org/build/borrow/tutorials/get-data} (accessed 18 June 2026)
 
 \end{thebibliography}
 
 \clearpage
 \appendix
 
+\section{Protocol Snapshot Calibration}
+\label{app:morpho}
+To check that collateral/debt role reversal is not only a syntactic possibility, we queried Morpho's public GraphQL API~\cite{MorphoDocs} for Ethereum markets ordered by borrow balance. The artifact in \texttt{artifacts/morpho\_snapshot/} stores the raw API response, the active edge list, the odd-cycle witness, and the script that regenerates the table below. An edge is active at threshold \(T\) if both the aggregate borrow exposure and aggregate collateral exposure of that market are at least \(T\) USD. This is a snapshot-level relevance check for realized market structure; it is not used by any hardness proof.
+
+\begin{center}
+\input{artifacts/morpho_snapshot/summary.tex}
+\end{center}
+
+\paragraph{Scale of the small-impact condition.}
+The snapshot above certifies role reversal, not price-impact gain. The small-impact contraction condition in the theory depends on market-depth and smoothing-width parameters, so it is better interpreted through a sensitivity scale. Let \(f=Q/R\) be the fraction of the relevant AMM reserve sold into a constant-product pool, and let \(\eta=\varepsilon/(C p_a)\) be the liquidation smoothing width as a fraction of collateral value. For a marginal constant-product price \(p(Q)=P(1+Q/R)^{-2}\), the local relative price change is approximately \(2f\). For an execution-price curve \(p(Q)=P(1+Q/R)^{-1}\), it is approximately \(f\). Thus a one-position feedback gain is on the order of \(2f/\eta\) for marginal pricing and \(f/\eta\) for execution pricing. The unit-gain thresholds are:
+\[
+\begin{array}{c|cccc}
+\eta & 0.5\% & 1\% & 2\% & 5\%\\
+\hline
+\text{marginal price: } f>\eta/2 & 0.25\% & 0.5\% & 1\% & 2.5\%\\
+\text{execution price: } f>\eta & 0.5\% & 1\% & 2\% & 5\%
+\end{array}
+\]
+This calculation does not assert that a particular protocol oracle transmits AMM spot moves instantly. It explains why the large-impact regime is a realistic stress regime once smoothing is narrow relative to possible liquidation size.
+
 \section{Additional Details for Sign-Balanced Clearing}
 \label{app:zmatrix}
-This appendix records mechanical extensions and algebraic details used around the sign-balanced side. None of the main support theorems depends on the exploratory material in Appendix~\ref{app:sfbfp}.
+This appendix records mechanical extensions and algebraic details used around the sign-balanced side.
 
 \begin{proof}[Proof of Proposition~\ref{prop:smallimpact}]
-By Perron--Frobenius, since \(A\ge0\) and \(\rho(A)<1\), there are \(v>0\) and \(\lambda<1\) with \(Av\le \lambda v\). In the weighted sup norm \(\|r\|_v=\max_i |r_i|/v_i\), the projection \(\clip_{[0,u]}\) is nonexpansive coordinate-wise and
+In the weighted sup norm \(\|r\|_v=\max_i |r_i|/v_i\), the projection \(\clip_{[0,u]}\) is nonexpansive coordinate-wise and, using the assumed certificate \(Av\le\lambda v\),
 \[
    \|T(y)-T(y')\|_v\le \|A(y-y')\|_v\le \lambda \|y-y'\|_v .
 \]
-Thus \(T\) is a contraction, so Banach iteration converges geometrically to the unique fixed point and gives a \(\delta\)-clearing in time polynomial in the input size and \(\log(1/\delta)\).
+Thus \(T\) is a contraction, so Banach iteration converges geometrically to the unique fixed point. The number of iterations is \(O(\log(R/\delta)/(1-\lambda))\), where \(R\) is the box diameter in \(\|\cdot\|_v\).
 \end{proof}
 
 \subsection{Nonnegative-Drift Special Case}
 \label{app:nonneg-special}
 
+\begin{lemma}[the least fixed point has subcritical interior]
+\label{lem:lfpsub}
+For any \(B\ge0\) and any \(g\in\R^n\), the least fixed point of \(T(z)=\clip_{[0,u]}(Bz+g)\) satisfies
+\[
+        \rho(B_{I^\ast I^\ast})<1 .
+\]
+\end{lemma}
+
+\begin{proof}
+This is the fixed-point form of the standard least-element fact that the basic block of a least solution of a Z-matrix complementarity problem is a nonsingular \(M\)-matrix~\cite{Chandrasekaran1970,Pang1979,CottlePangStone1992}. For completeness we give the short monotone proof. Suppose \(M=B_{I^\ast I^\ast}\) has \(\rho(M)\ge1\). Perron--Frobenius gives a nonzero \(\delta\ge0\) with \(M\delta=\rho(M)\delta\), allowing reducibility. Extend \(\delta\) by zero outside \(I^\ast\). For sufficiently small \(\varepsilon>0\), \(z(\varepsilon)=z^\ast-\varepsilon\delta\) remains in the same open box on \(I^\ast\). On \(I^\ast\),
+\[
+        (Bz(\varepsilon)+g)_{I^\ast}
+        =z^\ast_{I^\ast}-\varepsilon M\delta
+        \le z^\ast_{I^\ast}-\varepsilon\delta
+        =z(\varepsilon)_{I^\ast}.
+\]
+On \(U^\ast\), decreasing \(z^\ast\) in nonnegative directions can only decrease the drive, so clipping gives \(T_i(z(\varepsilon))\le u_i=z_i(\varepsilon)\). On \(L^\ast\), the fixed-point condition implies \((Bz^\ast+g)_i\le0\), and the drive again only decreases, so \(T_i(z(\varepsilon))=0=z_i(\varepsilon)\). Thus \(T(z(\varepsilon))\le z(\varepsilon)\). The least fixed point of a monotone map is the least prefixed point, so \(z^\ast\le z(\varepsilon)<z^\ast\) on the support of \(\delta\), a contradiction.
+\end{proof}
+
+\begin{lemma}[floor equals unreachability]
+\label{lem:floor}
+For \(g\ge0\), the positive coordinates of the least fixed point are exactly those reachable from \(\operatorname{supp}(g)\) in the feeds graph \(j\to i\) when \(B_{ij}>0\). The restriction to this reachable set is autonomous and strictly positive.
+\end{lemma}
+
 \begin{proof}[Proof of Lemma~\ref{lem:floor}]
 Let \(A\) be the set of coordinates reachable from \(\operatorname{supp}(g)\) in the feeds graph, and \(L\) its complement. In the Kleene iteration from \(0\), a coordinate becomes positive exactly when it receives positive input from \(g\) or from an already positive coordinate, since all coefficients and all existing positive values are nonnegative. Hence the eventual positive coordinates are exactly \(A\). If a coordinate in \(A\) fed a coordinate in \(L\), then the latter would also be reachable. Therefore the restricted active block on \(A\) is autonomous.
 \end{proof}
 
+\begin{lemma}[nonnegative cascade]
+\label{thm:term}
+An autonomous block with \(B\ge0\), \(g\ge0\), and every coordinate reachable from \(\operatorname{supp}(g)\) has a unique fixed point, computable in \(O(n)\) cascade rounds by exact rational linear solves and standard exact \(M\)-matrix tests.
+\end{lemma}
+
 \begin{proof}[Proof of Lemma~\ref{thm:term}]
+This is a nonnegative-drift specialization of the least-element Z-matrix methods discussed in Section~\ref{sec:nonnegdrift}. We give the fixed-point proof because it is useful for interpreting the economic special case below.
 Write \(S\) for the block. By Lemma~\ref{lem:floor}, \(z^\ast>0\), so \(I^\ast=\{i:z^\ast_i<u_i\}=S\setminus U^\ast\). By Lemma~\ref{lem:lfpsub}, \(\rho(B_{I^\ast I^\ast})<1\). Maintain a tentative clamp set \(C\), initially empty, put \(I=S\setminus C\), and when \(\rho(B_{II})<1\) write
 \[
         \hat z_I(C)=(I-B_{II})^{-1}(g_I+B_{IC}u_C).
@@ -574,8 +790,53 @@ Growth terminates because enlarging \(C\) only shrinks the principal submatrix \
 At halt \(T(z)=z\). If \(z'\ge z^\ast\) is another fixed point and \(D=\{i:z'_i>z^\ast_i\}\), then \(D\subseteq I^\ast\) and \(\delta_D\le B_{DD}\delta_D\) for \(\delta=z'-z^\ast>0\) on \(D\). Collatz--Wielandt gives \(\rho(B_{DD})\ge1\), contradicting \(D\subseteq I^\ast\) and \(\rho(B_{I^\ast I^\ast})<1\). Thus the halted fixed point is unique and equals \(z^\ast\).
 \end{proof}
 
+\begin{theorem}[nonnegative-drift SFBFP]
+\label{cor:inP}
+For every rational \(B\ge0\), \(g\ge0\), and \(u>0\), the least fixed point of \(z=\clip_{[0,u]}(Bz+g)\) is computable in time polynomial in the input bit length.
+\end{theorem}
+
 \begin{proof}[Proof of Theorem~\ref{cor:inP}]
+The result is a special case of Proposition~\ref{thm:mixedinP}. The following argument is included as a direct monotone proof for the nonnegative-drift regime.
 Compute the reachable set \(A\) of Lemma~\ref{lem:floor} by graph search and set \(z^\ast_L=0\). The active subsystem on \(A\) is autonomous and satisfies the hypotheses of Lemma~\ref{thm:term}, so the cascade returns its unique fixed point in \(O(|A|)\) rounds. The exact linear solves have polynomial bit complexity, and each subcriticality decision is a standard exact rational \(M\)-matrix test. Combining the active solution with \(z^\ast_L=0\) gives the least fixed point of the original system.
+\end{proof}
+
+\subsection{A Self-Contained Activation Cascade}
+\label{app:cascade}
+
+The polynomial-time result in Proposition~\ref{thm:mixedinP} follows from classical least-element complementarity theory. We nevertheless record the monotone-map-native cascade that specializes those least-element methods to the fixed-point form.
+
+\begin{lemma}[from-above cascade for an active block with positive least fixed point]
+\label{lem:fromabove}
+Let \(A\subseteq S\) carry an autonomous block map \(T_A(y)=\clip_{[0,u_A]}(B_{AA}y+g_A)\) with \(B_{AA}\ge0\) and \emph{arbitrary} \(g_A\), and suppose its least fixed point \(\zeta=\operatorname{lfp}(T_A)\) is strictly positive. Then \(\zeta\) is the unique fixed point of \(T_A\). It is computed in at most \(|A|\) rounds by the from-above cascade, which starts with all coordinates clamped (\(C=A\)). In a round with \(I=A\setminus C\), the algorithm solves \(\hat z_I=(I-B_{II})^{-1}(g_I+B_{IC}u_C)\). It clamps every \(i\in I\) with \(\hat z_i\ge u_i\). If no such coordinate exists, it releases from \(C\) every \(c\) with \((Bz+g)_c<u_c\), and halts when none remain.
+\end{lemma}
+
+\begin{proof}
+Since \(\zeta>0\), Lemma~\ref{lem:lfpsub} applied to \(T_A\) gives \(\rho(B_{I_AI_A})<1\), where \(I_A=\{i\in A:\zeta_i<u_i\}\) and \(U_A=\{i\in A:\zeta_i=u_i\}\).
+
+\emph{Uniqueness.} Any fixed point \(z'\) has \(\delta=z'-\zeta\ge0\). If \(\delta_i>0\), then \(\zeta_i<u_i\), and since \(\zeta>0\), \(i\in I_A\). Hence \(\operatorname{supp}\delta\subseteq I_A\). On \(D=\operatorname{supp}\delta\), interiority gives \(\delta_D\le B_{DD}\delta_D\). Collatz--Wielandt then forces \(\rho(B_{DD})\ge1\), contradicting \(\rho(B_{DD})\le\rho(B_{I_AI_A})<1\) unless \(\delta=0\).
+
+\emph{Invariant \(C\supseteq U_A\).} Initially \(C=A\supseteq U_A\). Each repair point satisfies \(z\ge\zeta\), as shown below. A released \(c\), with \((Bz+g)_c<u_c\), then has \((B\zeta+g)_c\le(Bz+g)_c<u_c\). Thus \(\zeta_c<u_c\) and \(c\notin U_A\). Hence \(C\supseteq U_A\) throughout and \(I=A\setminus C\subseteq I_A\). The interior is always subcritical, and \((I-B_{II})^{-1}\ge0\).
+
+\emph{Positivity by domination.} For \(C\supseteq U_A\), the true \(\zeta\) satisfies \(\zeta_I=(I-B_{II})^{-1}(g_I+B_{IC}\zeta_C)\). Therefore \(\hat z_I-\zeta_I=(I-B_{II})^{-1}B_{IC}(u_C-\zeta_C)\ge0\), and \(\hat z_I\ge\zeta_I>0\). At a repair round, where \(\hat z_I<u_I\), the point \(z\) equals \(u\) on \(C\) and \(\hat z_I\in(0,u_I)\) on \(I\). It is prefixed because \(T_A(z)_I=\hat z_I=z_I\) and \(T_A(z)_C\le u_C=z_C\). Hence \(z\ge\zeta\).
+
+\emph{Monotone repair, no re-clamping.} From \(C=A\), the first round is a repair. If a repair round has a nonempty release set \(\mathrm{bad}\), put \(C'=C\setminus\mathrm{bad}\supseteq U_A\) and \(I'=A\setminus C'\subseteq I_A\). The contraction \(T_{C'}(w)=\clip_{[0,u_{I'}]}(B_{I'I'}w+B_{I'C'}u_{C'}+g_{I'})\) has a unique fixed point \(\hat z_{I'}(C')\). The current \(z|_{I'}\) is prefixed for it, with equality on the old interior and strict decrease on \(\mathrm{bad}\). Hence \(\hat z_{I'}(C')\le z_{I'}\), so \(\hat z_c<u_c\) on \(\mathrm{bad}\) and \(\hat z_i<u_i\) on the old interior. The next round is again a repair with \(C'\subsetneq C\). After the first repair, each round removes at least one coordinate, so within \(\le|A|\) rounds the release set is empty and the returned fixed point equals \(\zeta\).
+\end{proof}
+
+\begin{lemma}[monotone activation]
+\label{lem:activation}
+Start from \(A=\varnothing\), \(z=0\). With \(d=Bz+g\), let \(\mathrm{act}=\{f\notin A:d_f>0\}\). If \(\mathrm{act}=\varnothing\), stop. Otherwise set \(A\leftarrow A\cup\mathrm{act}\), recompute \(z_A=\operatorname{lfp}(T_A)\) by Lemma~\ref{lem:fromabove}, set \(z=0\) off \(A\), and repeat. This runs for at most \(|S|\) iterations, every block it solves has \(\operatorname{lfp}(T_A)>0\), and it returns the least fixed point \(z^\ast\).
+\end{lemma}
+
+\begin{proof}
+Maintain the following invariant. We have \(A\subseteq A^\ast:=\operatorname{supp}(z^\ast)\), \(z=\operatorname{lfp}(T_A)\) on \(A\) and \(0\) off \(A\), \(\operatorname{lfp}(T_A)>0\), and \(z\le z^\ast\). The base case \(A=\varnothing\) is vacuous.
+
+\emph{Activations are correct.} If \(d_f=(Bz+g)_f>0\) with \(z\le z^\ast\), then \((Bz^\ast+g)_f\ge d_f>0\). Thus \(z^\ast_f>0\), so \(f\in A^\ast\) and \(A\cup\mathrm{act}\subseteq A^\ast\).
+
+\emph{The new block's least fixed point is positive.} Write \(A'=A\cup\mathrm{act}\). Activation only adds nonnegative input, so the Kleene iterates from \(0\) for \(T_{A'}\) dominate those for \(T_A\) on \(A\). Hence \(\operatorname{lfp}(T_{A'})|_A\ge\operatorname{lfp}(T_A)>0\). For \(f\in\mathrm{act}\), \((B\operatorname{lfp}(T_{A'})+g)_f\ge d_f>0\), so that coordinate is positive too. Thus \(\operatorname{lfp}(T_{A'})>0\) and Lemma~\ref{lem:fromabove} applies.
+
+\emph{\(z\le z^\ast\) is preserved.} \(z^\ast_{A'}=\clip\!\big(B_{A'A'}z^\ast_{A'}+B_{A',\,S\setminus A'}z^\ast_{S\setminus A'}+g_{A'}\big)\ge\clip(B_{A'A'}z^\ast_{A'}+g_{A'})=T_{A'}(z^\ast_{A'})\), so \(z^\ast_{A'}\) is prefixed for \(T_{A'}\) and \(\operatorname{lfp}(T_{A'})\le z^\ast_{A'}\).
+
+\emph{Termination and correctness.} Each productive iteration enlarges \(A\), so there are at most \(|S|\). At termination \(d_f\le0\) off \(A\), so \(T(z)_f=\clip(d_f)=0=z_f\). On \(A\), \(z\) is a fixed point of \(T_A\). Thus \(T(z)=z\) and \(z\le z^\ast\). Since \(z^\ast\) is least, \(z=z^\ast\).
 \end{proof}
 
 \begin{proposition}[when the transformed drift is nonnegative]
@@ -620,7 +881,7 @@ The identity uses \(1-\clip_{[0,1]}(t)=\clip_{[0,1]}(1-t)\) on the relevant rang
 
 \begin{corollary}[balanced circuit fragment]
 \label{cor:fragment}
-The sign-balanced SUM/NOT fragment is the circuit analogue of the transformed DeFi system in Lemma~\ref{lem:nonneg}: after a gauge transform it has the form \(y=\clip(Ay+c)\) with \(A\ge0\). Therefore the balanced fragment is polynomial-time solvable by Theorem~\ref{thm:mixedinP}; SUM/NOT hardness must come from sign-imbalance.
+The sign-balanced SUM/NOT fragment is the circuit analogue of the transformed DeFi system in Lemma~\ref{lem:nonneg}: after a gauge transform it has the form \(y=\clip(Ay+c)\) with \(A\ge0\). Therefore the balanced fragment is polynomial-time solvable by Proposition~\ref{thm:mixedinP}; SUM/NOT hardness must come from sign-imbalance.
 \end{corollary}
 
 \paragraph{Separable monotone impact and comparative statics.}
@@ -630,11 +891,48 @@ Replace the linear price equation by
 \[
         p_k=g_k\!\left(\sum_{i:a_i=k}\alpha_i x_i\right),
 \]
-where each \(g_k:[0,\infty)\to[0,M_k]\) is continuous, nonincreasing, and polynomial-time evaluable on rational inputs to any requested precision. If \(\GA\) is bipartite, then for every rational \(\delta>0\), smooth \(\delta\)-clearing reduces in polynomial time to succinct Tarski and hence belongs to CLS. This includes independent asset--numeraire constant-product pools such as \(g_k(Q)=\min\{\kappa_k/(R_k+Q),M_k\}\).
+where each \(g_k:[0,\infty)\to[0,M_k]\) is continuous, nonincreasing, and given with an exact rational evaluation algorithm: on every rational input of polynomial bit length in the relevant sales range, it outputs the exact rational value \(g_k(Q)\) in polynomial time and polynomial bit length. If \(\GA\) is bipartite, then for every rational \(\delta>0\), smooth \(\delta\)-clearing reduces in polynomial time to succinct Tarski and hence belongs to CLS. This includes independent asset--numeraire constant-product pools such as \(g_k(Q)=\min\{\kappa_k/(R_k+Q),M_k\}\).
 \end{theorem}
 
 \begin{proof}[Proof of Theorem~\ref{thm:amm}]
-Use the same bipartition \((L,R)\) and transformed variables \(q,z\) as in Theorem~\ref{thm:balancedCLS}. For the price block, if \(k\in L\), then \(x_i=1-z_i\) for positions collateralized by \(k\), so the sale quantity is nonincreasing in each \(z_i\). Since \(g_k\) is nonincreasing, \(q_k=p_k\) is nondecreasing. If \(k\in R\), then \(x_i=z_i\), the sale quantity is nondecreasing, \(p_k=g_k(\cdot)\) is nonincreasing, and \(q_k=M_k-p_k\) is nondecreasing. The liquidation block is the same four-case computation as Lemma~\ref{lem:nonneg}, so the transformed map is isotone. The grid-rounding proof of Theorem~\ref{thm:balancedCLS} applies.
+Use the same bipartition \((L,R)\) and transformed variables \(q,z\) as in Theorem~\ref{thm:balancedCLS}. For the price block, if \(k\in L\), then \(x_i=1-z_i\) for positions collateralized by \(k\), so the sale quantity is nonincreasing in each \(z_i\). Since \(g_k\) is nonincreasing, \(q_k=p_k\) is nondecreasing. If \(k\in R\), then \(x_i=z_i\), the sale quantity is nondecreasing, \(p_k=g_k(\cdot)\) is nonincreasing, and \(q_k=M_k-p_k\) is nondecreasing. The liquidation block is the same four-case computation as Lemma~\ref{lem:nonneg}, so the transformed map is isotone. On a rational grid point, the exact-evaluation assumption gives every coordinate of \(T(y)\) as a rational of polynomial bit length; therefore the coordinate-wise floor to the rational grid can be computed by exact rational comparison, with no boundary ambiguity. The grid-rounding proof of Theorem~\ref{thm:balancedCLS} applies.
+\end{proof}
+
+\begin{proposition}[explicit monotone PWL impact is exact-P]
+\label{prop:pwlP}
+In the separable monotone-impact model of Theorem~\ref{thm:amm}, suppose each \(g_k\) is a continuous nonincreasing piecewise-linear rational function, explicitly given by rational breakpoints and slopes, and the total number of pieces is polynomial in the input size. If \(\GA\) is bipartite, then a least smooth clearing is computable exactly in polynomial time.
+\end{proposition}
+\begin{proof}
+Use the sign transform of Theorem~\ref{thm:balancedCLS}. For an asset \(k\in L\), write
+\[
+   Q_k(z)=\sum_{i:a_i=k}\alpha_i x_i
+          =Q_k^0-\sum_{i:a_i=k}\alpha_i z_i,
+   \qquad Q_k^0=\sum_{i:a_i=k}\alpha_i ,
+\]
+and set \(t_k=\sum_{i:a_i=k}\alpha_i z_i\), \(h_k(t)=g_k(Q_k^0-t)\). For \(k\in R\), set \(t_k=\sum_{i:a_i=k}\alpha_i z_i\) and \(h_k(t)=M_k-g_k(t)\). In both cases \(h_k\) is a continuous nondecreasing rational PWL function of the nonnegative affine input \(t_k\), and the transformed price variable is \(q_k=h_k(t_k)\).
+
+Let \(h\) be any such nondecreasing PWL function with breakpoints
+\[
+   0=\tau_0<\tau_1<\cdots<\tau_r
+\]
+on its relevant interval and slope \(s_j\ge0\) on \([\tau_{j-1},\tau_j]\). Then
+\[
+   h(t)=h(0)+\sum_{j=1}^r s_j\,
+        \clip_{[0,\tau_j-\tau_{j-1}]}\bigl(t-\tau_{j-1}\bigr).
+\]
+For every price curve segment introduce an auxiliary variable
+\[
+   w_{kj}=\clip_{[0,\tau_j-\tau_{j-1}]}\bigl(t_k-\tau_{j-1}\bigr).
+\]
+The equations for the \(w_{kj}\)'s and the transformed prices
+\[
+   q_k=\clip_{[0,M_k]}\!\left(h_k(0)+\sum_j s_{kj}w_{kj}\right)
+\]
+are clipped-affine equations with nonnegative variable coefficients; the outer clip is harmless because \(h_k\) already ranges in \([0,M_k]\). Adding them to the transformed liquidation equations gives a polynomial-size system
+\[
+      Y=\clip_{[0,U]}(A'Y+c'),\qquad A'\ge0,
+\]
+with rational data. Proposition~\ref{thm:mixedinP} computes its least fixed point exactly in polynomial time. Projecting this solution to the original price and liquidation variables gives the least sign-balanced clearing for the PWL-impact instance.
 \end{proof}
 
 \begin{proposition}[sign-balanced comparative statics]
@@ -655,10 +953,10 @@ In the separable monotone-impact model of Theorem~\ref{thm:amm}, suppose each \(
 \widehat Q_{i a_i}=\frac{C_i}{\eps_i},\quad
 \widehat Q_{i b_i}=\frac{\theta_iD_i}{\eps_i}.
 \]
-If \(\rho(\widehat A)<1\), then the transformed clearing map is a contraction in a weighted sup norm, the clearing is unique, and a \(\delta\)-clearing is computable in time polynomial in the input size and \(\log(1/\delta)\).
+If there are rational \(v>0\) and \(\lambda<1\) with \(\widehat A v\le\lambda v\), then the transformed clearing map is a contraction in the weighted sup norm induced by \(v\). The clearing is unique, and fixed-point iteration computes a \(\delta\)-clearing in time polynomial in the input size, the bit length of \((v,\lambda)\), \(\log(1/\delta)\), and \(1/(1-\lambda)\). In particular this is polynomial whenever the contraction certificate has polynomial bit length and inverse-polynomial gap.
 \end{proposition}
 \begin{proof}
-The clipping maps are coordinate-wise nonexpansive, and the transformed price and liquidation blocks are Lipschitz-bounded by \(\widehat P\) and \(\widehat Q\), so \(|T(y)-T(y')|\le\widehat A|y-y'|\). Perron--Frobenius gives a weighted sup norm in which the Lipschitz factor is below one.
+The clipping maps are coordinate-wise nonexpansive, and the transformed price and liquidation blocks are Lipschitz-bounded by \(\widehat P\) and \(\widehat Q\), so \(|T(y)-T(y')|\le\widehat A|y-y'|\). With the displayed certificate, the weighted norm \(\|r\|_v=\max_i |r_i|/v_i\) has Lipschitz factor at most \(\lambda\). Thus \(O(\log(R/\delta)/(1-\lambda))\) iterations suffice, where \(R\) is the diameter of the rational box in this norm.
 \end{proof}
 
 \paragraph{Box-LCP and exact subcriticality tests.}
@@ -673,7 +971,7 @@ For \(B\ge0\) and any \(g\), the least fixed point \(z^\ast\), its floor set \(L
 together with the lower-, interior-, and upper-bound inequalities defining the three sets.
 \end{lemma}
 \begin{proof}
-On \(I^\ast\), the clipping is inactive, and the inverse exists by Lemma~\ref{lem:lfpsub}. The boundary inequalities are exactly the box complementarity conditions.
+This is the usual active-set description of a box complementarity solution. On \(I^\ast\), the clipping is inactive, and the inverse exists by Lemma~\ref{lem:lfpsub}. The boundary inequalities are exactly the box complementarity conditions.
 \end{proof}
 
 \begin{lemma}[exact subcriticality tests]
@@ -681,7 +979,7 @@ On \(I^\ast\), the clipping is inactive, and the inverse exists by Lemma~\ref{le
 For rational \(B'\ge0\), the condition \(\rho(B')<1\) can be tested by exact rational polynomial-time \(M\)-matrix tests for \(I-B'\). No numerical eigenvalue approximation or transcendence bound is needed.
 \end{lemma}
 \begin{proof}
-\(I-B'\) is a Z-matrix, and \(\rho(B')<1\) iff \(I-B'\) is a nonsingular \(M\)-matrix iff there is \(v>0\) with \((I-B')v>0\). After normalization, this is a rational linear feasibility problem; equivalent principal-minor or elimination tests give the same exact decision.
+\(I-B'\) is a Z-matrix, and \(\rho(B')<1\) iff \(I-B'\) is a nonsingular \(M\)-matrix iff there is \(v>0\) with \((I-B')v>0\), by the standard Fiedler--Ptak and nonnegative-matrix characterizations~\cite{FiedlerPtak1962,BermanPlemmons1994}. After normalization, this is a rational linear feasibility problem; equivalent principal-minor or elimination tests give the same exact decision.
 \end{proof}
 
 \begin{lemma}[subcritical upper bound]
@@ -689,7 +987,7 @@ For rational \(B'\ge0\), the condition \(\rho(B')<1\) can be tested by exact rat
 Assume \(\rho(B_{SS})<1\) and \(g'\ge0\). The unclipped solve \(\hat z=(I-B_{SS})^{-1}g'\) dominates the least box fixed point on \(S\). If \(\hat z\le u_S\), then \(\hat z\) is exact on \(S\). Otherwise, the over-threshold set can strictly contain the true clamp set.
 \end{lemma}
 \begin{proof}
-The clipped Kleene orbit from \(0\) is bounded above by the unclipped affine orbit, which increases to \(\hat z\). Strict over-capping occurs for
+This is the standard monotone comparison for a subcritical \(M\)-matrix block. The clipped Kleene orbit from \(0\) is bounded above by the unclipped affine orbit, which increases to \(\hat z\). Strict over-capping occurs for
 \[
         B=\begin{pmatrix}0&1\\0&0\end{pmatrix},\qquad
         g'=(0,10),\qquad u=(5,1),
@@ -715,7 +1013,7 @@ The ordinary standard-LCP embedding of this upper-bounded system, with variables
 \[
     \begin{pmatrix}B&I\\ -I&0\end{pmatrix}.
 \]
-The \(+I\) block is forced by the sign of the upper-bound multiplier and gives positive off-diagonal entries. Hence the bounded system should not be described as an ordinary Z-matrix LCP. What bipartiteness gives unconditionally is the monotone clipped-affine form, the Tarski reduction, and the upper-bounded Z-matrix base structure. A polynomial-time algorithm follows in the small-impact regime where \(\rho(A)<1\), equivalently \(I-A\) is a nonsingular M-matrix.
+The \(+I\) block is forced by the sign of the upper-bound multiplier and gives positive off-diagonal entries. Hence the bounded system should not be described as an ordinary standard-form Z-matrix LCP after this embedding. It is instead a bounded Z-matrix complementarity problem, the setting of the least-element theory used in Proposition~\ref{thm:mixedinP}. Small impact is the special case where \(\rho(A)<1\), equivalently \(I-A\) is a nonsingular M-matrix and the fixed point is unique.
 
 \section{All-or-Nothing NP-Hardness Construction}
 \label{app:discreteNP}
@@ -786,6 +1084,19 @@ The construction uses dual rails: a signal \(u\) has an asset for \(u\) and a se
 The following constant-size gates are realizable in the all-or-nothing DeFi model with fresh bus and output assets, polynomial-bit rational parameters, strict margins, and \(\alpha_i\le\cf C_i\). The list consists of a free bit, NOT, copy/literal, fan-in-\(k\) NOR via a fresh bus, the resulting OR/AND gates by dual rail, the SAT bit, and the gated ring of Lemma~\ref{lem:ring}. Shared-collateral uses obey Lemma~\ref{lem:rankone}.
 \end{lemma}
 \begin{proof}
+The finite threshold rows used by the reduction, up to positive rescaling and rail complementation, are:
+\[
+\begin{array}{c|c|c}
+\text{gate} & h_o(x) & \text{strict margin}\\
+\hline
+\text{free bit} & -1+2x_o & 1\\
+\NOT(u) & 1+x_o-3x_u & 1\\
+\text{copy}(u) & -\frac32+x_o+3x_u & \frac12\\
+\NOR(u_1,\ldots,u_k),\ k\le3 & 1+x_o-3\sum_t x_{u_t} & 1
+\end{array}
+\]
+Here \(x_o=\ind[h_o>0]\). Thus the free row has two consistent states, the NOT row forces \(x_o=1-x_u\), the copy row forces \(x_o=x_u\), and the NOR row forces \(x_o=1\) exactly when all inputs are \(0\). Larger fan-in conjunctions are built as binary trees of these fixed rows, using dual rails.
+
 A free bit \(P_v\) uses a unique collateral asset and an inert debt anchor, with \(h_v=\beta_v+w_{vv}x_v\) and \(-w_{vv}<\beta_v<0\). Both \(x_v=0\) and \(x_v=1\) are consistent. A NOT gate \(Q=\NOT(P_v)\) uses debt asset \(\sigma_v\) and fresh collateral, with
 \[
         h_Q=\beta_Q+w_Qx_Q-W_Qx_v,
@@ -804,9 +1115,9 @@ Build an odd ring with three positions
 \[
         R_2=(a_2;a_1),\qquad R_3=(a_3;a_2),\qquad R_1=(a_1;a_3),
 \]
-so the ungated ring enforces \(R_2=\NOT(R_1)\), \(R_3=\NOT(R_2)\), and \(R_1=\NOT(R_3)\), i.e. \(R_1=\NOT(R_1)\). This has no consistent state and gives the odd asset cycle \(a_1-a_2-a_3-a_1\). A controller \(W\) shares collateral \(a_1\) with \(R_1\) and reads \(\sigma_{\overline{\SAT}}\) as debt:
+so the ungated ring enforces \(R_2=\NOT(R_1)\), \(R_3=\NOT(R_2)\), and \(R_1=\NOT(R_3)\), i.e. \(R_1=\NOT(R_1)\). This has no consistent state and gives the odd asset cycle \(a_1-a_2-a_3-a_1\). A controller \(W\) shares collateral \(a_1\) with \(R_1\) and reads \(\sigma_{\UNSAT}\) as debt:
 \[
-h_W=\beta_W+w_Wx_W+u_Wx_{R_1}-V_Wx_{\overline{\SAT}},
+h_W=\beta_W+w_Wx_W+u_Wx_{R_1}-V_Wx_{\UNSAT},
 \]
 \[
 h_{R_1}=\beta_{R_1}+w_{R_1}x_{R_1}-V_{R_1}x_{R_3}+U_Wx_W .
@@ -814,8 +1125,8 @@ h_{R_1}=\beta_{R_1}+w_{R_1}x_{R_1}-V_{R_1}x_{R_3}+U_Wx_W .
 The shared-collateral terms obey \(U_Wu_W=w_{R_1}w_W\). We require
 \[
 \begin{aligned}
-\SAT=1&:\quad \beta_W>0\Rightarrow W=1,\\
-\SAT=0&:\quad V_W>\beta_W+w_W+u_W\Rightarrow W=0,\\
+\UNSAT=0&:\quad \beta_W>0\Rightarrow W=1,\\
+\UNSAT=1&:\quad V_W>\beta_W+w_W+u_W\Rightarrow W=0,\\
 W=0&:\quad 0<\beta_{R_1}<V_{R_1}-w_{R_1}\quad(\text{clean NOT}),\\
 W=1&:\quad U_W>V_{R_1}-\beta_{R_1}\Rightarrow R_1=1.
 \end{aligned}
@@ -843,7 +1154,7 @@ The weights in Lemma~\ref{lem:feas} are realized with \(C_{R_1}=C_W=1\),
         \alpha_W=\frac{\cf}{2},\qquad
         s_{a_1}=\frac{8}{\cf}.
 \]
-Then \(w_{R_1}=1\), \(U_W=4\), \(u_W=1\), and \(w_W=4\), while \(\alpha_{R_1},\alpha_W\le\cf C\). The debt reads \(V_{R_1}=3\) and \(V_W=7\) are realized independently through \(a_3\) and \(\sigma_{\overline{\SAT}}\), by scaling \(\theta D\) and the corresponding slopes. The biases are set by the \(p^0\)'s, and Lemma~\ref{lem:band} keeps all prices in band.
+Then \(w_{R_1}=1\), \(U_W=4\), \(u_W=1\), and \(w_W=4\), while \(\alpha_{R_1},\alpha_W\le\cf C\). The debt reads \(V_{R_1}=3\) and \(V_W=7\) are realized independently through \(a_3\) and \(\sigma_{\UNSAT}\), by scaling \(\theta D\) and the corresponding slopes. The biases are set by the \(p^0\)'s, and Lemma~\ref{lem:band} keeps all prices in band.
 \end{lemma}
 
 \begin{lemma}[ring behavior]
@@ -855,7 +1166,7 @@ Under Lemmas~\ref{lem:feas} and \ref{lem:realize}, the block \(\{W,R_1,R_2,R_3\}
 when \(\SAT=1\). It has no consistent state when \(\SAT=0\).
 \end{lemma}
 \begin{proof}
-If \(\SAT=1\), then \(\overline{\SAT}=0\), so the controller inequality forces \(x_W=1\). The \(W=1\) inequality forces \(x_{R_1}=1\), and the clean NOTs force \(x_{R_2}=0\) and \(x_{R_3}=1\). Rechecking \(W\) and \(R_1\) gives consistency and uniqueness. If \(\SAT=0\), then \(\overline{\SAT}=1\), so \(x_W=0\). The ring then reduces to three clean NOTs and hence to \(R_1=\NOT(R_1)\), impossible.
+If \(\SAT=1\), then \(\UNSAT=0\), so the controller inequality forces \(x_W=1\). The \(W=1\) inequality forces \(x_{R_1}=1\), and the clean NOTs force \(x_{R_2}=0\) and \(x_{R_3}=1\). Rechecking \(W\) and \(R_1\) gives consistency and uniqueness. If \(\SAT=0\), then \(\UNSAT=1\), so \(x_W=0\). The ring then reduces to three clean NOTs and hence to \(R_1=\NOT(R_1)\), impossible.
 \end{proof}
 
 \subsection{Reduction from SAT}
@@ -863,22 +1174,22 @@ Given a 3-CNF formula \(\phi\) over variables \(v_1,\ldots,v_n\), build free bit
 \[
         \SAT=\bigwedge_c(\ell_{c,1}\vee\ell_{c,2}\vee\ell_{c,3})
 \]
-and \(\overline{\SAT}\), and the gated ring above driven by \(\overline{\SAT}\). All parameters are chosen according to Lemmas~\ref{lem:band}, \ref{lem:gate}, \ref{lem:feas}, and \ref{lem:realize}.
+and \(\UNSAT=1-\SAT\), and the gated ring above driven by \(\UNSAT\). All parameters are chosen according to Lemmas~\ref{lem:band}, \ref{lem:gate}, \ref{lem:feas}, and \ref{lem:realize}.
 
 \begin{theorem}[correctness of the discrete construction]
 \label{thm:correct}
 The constructed instance \(I_\phi\) has an all-or-nothing clearing iff \(\phi\) is satisfiable. Moreover, the number of clearings equals the number of satisfying assignments.
 \end{theorem}
 \begin{proof}
-By Lemma~\ref{lem:band}, all updates are affine threshold updates. Free bits are mutually independent and bistable. The literal, clause, \(\SAT\), and \(\overline{\SAT}\) layers form an acyclic functional circuit over the free bits by Lemma~\ref{lem:gate}. The gated ring is a sink and is read by no upstream gate. Thus a global fixed point is exactly a choice of free-bit assignment, its unique functional completion, and a consistent ring state. By Lemma~\ref{lem:ring}, the ring has a consistent state exactly when \(\SAT=1\), and then that state is unique. This gives the bijection between clearings and satisfying assignments.
+By Lemma~\ref{lem:band}, all updates are affine threshold updates. Free bits are mutually independent and bistable. The literal, clause, \(\SAT\), and \(\UNSAT\) layers form an acyclic functional circuit over the free bits by Lemma~\ref{lem:gate}. The gated ring is a sink and is read by no upstream gate. Thus a global fixed point is exactly a choice of free-bit assignment, its unique functional completion, and a consistent ring state. By Lemma~\ref{lem:ring}, the ring has a consistent state exactly when \(\SAT=1\), and then that state is unique. This gives the bijection between clearings and satisfying assignments.
 \end{proof}
 
 \begin{lemma}[connected non-bipartite asset graph]
 \label{lem:nonbip}
-The asset borrowing graph \(\GA(I_\phi)\) contains the odd triangle \(a_1-a_2-a_3-a_1\), and the controller edge \(\{a_1,\sigma_{\overline{\SAT}}\}\) attaches this triangle to the component carrying the SAT circuit and variables. Hence the relevant component is connected and non-bipartite.
+The asset borrowing graph \(\GA(I_\phi)\) contains the odd triangle \(a_1-a_2-a_3-a_1\), and the controller edge \(\{a_1,\sigma_{\UNSAT}\}\) attaches this triangle to the component carrying the SAT circuit and variables. Hence the relevant component is connected and non-bipartite.
 \end{lemma}
 \begin{proof}
-The three NOTs in the ring give the edges \(\{a_1,a_2\}\), \(\{a_2,a_3\}\), and \(\{a_3,a_1\}\). The controller \(W=(a_1;\sigma_{\overline{\SAT}})\) adds \(\{a_1,\sigma_{\overline{\SAT}}\}\). The SAT circuit is connected to \(\sigma_{\overline{\SAT}}\) by construction. Adding edges to a graph containing an odd cycle preserves non-bipartiteness.
+The three NOTs in the ring give the edges \(\{a_1,a_2\}\), \(\{a_2,a_3\}\), and \(\{a_3,a_1\}\). The controller \(W=(a_1;\sigma_{\UNSAT})\) adds \(\{a_1,\sigma_{\UNSAT}\}\). The SAT circuit is connected to \(\sigma_{\UNSAT}\) by construction. Adding edges to a graph containing an odd cycle preserves non-bipartiteness.
 \end{proof}
 
 \begin{theorem}[Theorem~\ref{thm:discreteNP}, restated]
@@ -920,10 +1231,10 @@ Let \(\sigma_i\) be a balancing gauge. For each priced asset \(k\), color it by 
 
 \begin{theorem}[localized frustration]
 \label{thm:local}
-In \(I_\phi\), deleting the three ring positions \(R_1,R_2,R_3\) leaves a balanced signed coupling graph and a bipartite asset graph. The imbalance is localized to the gated-ring block. The positions \(R_1,R_2,R_3\) form an odd-NOT triangle, while the controller \(W\) has the side-couplings needed to gate \(R_1\) and attaches that block to the SAT circuit. In \(\GA(I_\phi)\), \(W\) contributes only the asset edge \(\{a_1,\sigma_{\overline{\SAT}}\}\). The triangle \(a_1-a_2-a_3-a_1\) is the unique odd cycle of the ring block, and \(\{a_1,\sigma_{\overline{\SAT}}\}\) connects it to the feed-forward component.
+In \(I_\phi\), deleting the three ring positions \(R_1,R_2,R_3\) leaves a balanced signed coupling graph and a bipartite asset graph. The imbalance is localized to the gated-ring block. The positions \(R_1,R_2,R_3\) form an odd-NOT triangle, while the controller \(W\) has the side-couplings needed to gate \(R_1\) and attaches that block to the SAT circuit. In \(\GA(I_\phi)\), \(W\) contributes only the asset edge \(\{a_1,\sigma_{\UNSAT}\}\). The triangle \(a_1-a_2-a_3-a_1\) is the unique odd cycle of the ring block, and \(\{a_1,\sigma_{\UNSAT}\}\) connects it to the feed-forward component.
 \end{theorem}
 \begin{proof}
-The feed-forward gate library is acyclic in the Boolean sense and can be assigned the layer-parity gauge. Cross-layer debt-read edges are negative, and same-bus shared-collateral edges are positive. Lemma~\ref{lem:fwd} gives the matching bipartite coloring of its asset graph. In \(\GX\), the ring contributes the three negative edges \(R_1R_2,R_2R_3,R_3R_1\), producing a negative 3-cycle. The controller contributes a positive shared-collateral edge \(WR_1\), the negative side-coupling \(WR_2\) because \(W\)'s collateral asset \(a_1\) is \(R_2\)'s debt asset, and a negative debt-read attachment to the writer of \(\sigma_{\overline{\SAT}}\) in the SAT component. Removing \(R_1,R_2,R_3\) removes the ring obstruction and the \(WR_1,WR_2\) side-couplings. The remaining controller attachment is part of the feed-forward balanced component. In \(\GA\), the controller contributes only \(\{a_1,\sigma_{\overline{\SAT}}\}\), which attaches the ring asset triangle to the feed-forward component without adding a second odd cycle inside the ring block.
+The feed-forward gate library is acyclic in the Boolean sense and can be assigned the layer-parity gauge. Cross-layer debt-read edges are negative, and same-bus shared-collateral edges are positive. Lemma~\ref{lem:fwd} gives the matching bipartite coloring of its asset graph. In \(\GX\), the ring contributes the three negative edges \(R_1R_2,R_2R_3,R_3R_1\), producing a negative 3-cycle. The controller contributes a positive shared-collateral edge \(WR_1\), the negative side-coupling \(WR_2\) because \(W\)'s collateral asset \(a_1\) is \(R_2\)'s debt asset, and a negative debt-read attachment to the writer of \(\sigma_{\UNSAT}\) in the SAT component. Removing \(R_1,R_2,R_3\) removes the ring obstruction and the \(WR_1,WR_2\) side-couplings. The remaining controller attachment is part of the feed-forward balanced component. In \(\GA\), the controller contributes only \(\{a_1,\sigma_{\UNSAT}\}\), which attaches the ring asset triangle to the feed-forward component without adding a second odd cycle inside the ring block.
 \end{proof}
 
 \section{Gadget Algebra and Error Bounds}
@@ -950,9 +1261,148 @@ The final gain-2 clipped writer reads \(\bar A\) and uses \(C=1,D=2,\eps=2\). Si
 \[
  y_O=\clip\left(y_A+\frac{1}{2}y_O\right).
 \]
-If \(y_A\le 1/2\), the unique fixed point is \(2y_A\). If \(y_A>1/2\), the unique fixed point is \(1\). Thus the output is \(\T(2y_A)=\T(y_U+y_W)\). All self coefficients are at most \(1/2\) or \(1/3\) inside the macro, so the total error bound \(B_+\) is an absolute constant.
+If \(y_A\le 1/2\), the unique fixed point is \(2y_A\). If \(y_A>1/2\), the unique fixed point is \(1\). Thus the output is \(\T(2y_A)=\T(y_U+y_W)\). In this linear sheet all self coefficients are at most \(1/2\) or \(1/3\) inside the macro, so the total error bound \(B_+\) is an absolute constant. In the lifted constant-product sheet of Appendix~\ref{app:cpconstants}, the NOT/average self coefficient is \(<1/2\) and the gain-2 self coefficient is \(<2/3\); the corresponding locked constants are \(B=30\) and \(B'=15\).
 
 The close-factor bound can be met by scaling the output impact. For a writer with desired output contribution \(\eta\), take collateral amount parameter \(C=1\), liquidation amount \(\alpha=\cf/2\), and slope \(s_O=2\eta/\cf\). Then \(s_O\alpha=\eta\) and \(\alpha\le \cf C\).
+
+\section{Explicit Constants for Constant-Product Hardness}
+\label{app:cpconstants}
+This appendix proves Theorem~\ref{thm:cphardness}. We use the lifted encoding \(y_v=P_0-p_v\), with the intended wire interval \([0,1]\subset[P_0-1,P_0]\), and write \(\beta=1/P_0\). For a writer with collateral \(O\), debt \(U\), parameters \((C,D,\eps)\), and \(\theta=1\), the health equation gives
+\[
+ x=\clip_{[0,1]}\left(\underbrace{\frac{P_0(D-C)}{\eps}}_{c}
+ -\underbrace{\frac{D}{\eps}}_{a}y_U+\underbrace{\frac{C}{\eps}}_{\lambda}y_O\right).
+\]
+The bias now scales with \(P_0\). We therefore retune the writer sheet so that \(c=a\), which cancels the lifted bias, while preserving the intended input gain after solving the self-dependence.
+
+\begin{lemma}[lifted parameter sheet]
+\label{lem:cpsheet}
+With \(\theta=1\), the NOT and average co-writers use
+\[
+        (C,D,\eps)=(P_0-1,P_0,2P_0-1),
+\]
+and the gain-2 writer uses
+\[
+        (C,D,\eps)=(2(P_0-1),2P_0,3P_0-2).
+\]
+Both satisfy \(c=a\). The first sheet has \(a=1-\lambda\), and the second has \(a=2(1-\lambda)\). Thus the linearized fixed points are \(y_O=1-y_U\), \(y_A=(y_U+y_W)/2\), and \(y_O=\clip_{[0,1]}(2y_A)\). The self coefficients are
+\[
+        \lambda=\frac{P_0-1}{2P_0-1},\qquad
+        \lambda_2=\frac{2(P_0-1)}{3P_0-2},
+\]
+so the residual amplification factors are \(1/(1-\lambda)=2-\beta\) and \(1/(1-\lambda_2)=3-2\beta\). The input gains are \(1\) for NOT, \(1/2\) per input for the average, and \(2\) for gain-2. The collateral-debt incidences are unchanged from Appendix~\ref{app:gadget}, so Lemma~\ref{lem:gadgetparity} applies verbatim.
+\end{lemma}
+\begin{proof}
+For the first sheet,
+\[
+        c=\frac{P_0}{2P_0-1}=a,\qquad
+        \lambda=\frac{P_0-1}{2P_0-1},\qquad
+        a+\lambda=1.
+\]
+Solving \(y_O=c-a y_U+\lambda y_O\) gives \(y_O=1-y_U\). In an average pool, two such co-writers contribute half a unit of price drop each, so the fixed point is \(y_A=(y_U+y_W)/2\). For the second sheet,
+\[
+        c=\frac{2P_0}{3P_0-2}=a,\qquad
+        \lambda_2=\frac{2(P_0-1)}{3P_0-2},\qquad
+        a=2(1-\lambda_2).
+\]
+Reading the complement wire \(\bar A\) gives the active-branch equation \(y_O=2(1-\lambda_2)y_A+\lambda_2 y_O\), which is equivalent to \(y_O=2y_A\), clipped at one. The displayed amplification factors follow from direct algebra after substituting \(\beta=1/P_0\).
+\end{proof}
+
+\begin{lemma}[constant-product curvature]
+\label{lem:cpcurv}
+Price asset \(O\) by the marginal curve \(p_O=P_0(1+Q_O/R_O)^{-2}\), with \(Q_O=\alpha_Ox\) and slope match \(\alpha_O/R_O=\beta/2\) for one writer or \(\alpha_O/R_O=\beta/4\) for a two-writer average pool over range \(x_1+x_2\in[0,2]\). Alternatively, price it by the execution curve \(p_O=P_0(1+Q_O/R_O)^{-1}\), with \(\alpha_O/R_O=\beta\) for one writer or \(\alpha_O/R_O=\beta/2\) for an average pool. In every case,
+\[
+        |y_O-x|\le\beta,\qquad
+        \left|y_A-\frac{x_1+x_2}{2}\right|\le\beta .
+\]
+\end{lemma}
+\begin{proof}
+For the marginal curve, set \(u=(\alpha_O/R_O)x\). With target linear price \(\ell=P_0(1-2u)\),
+\[
+        (1+u)^{-2}-(1-2u)=\frac{u^2(3+2u)}{(1+u)^2}\le 4u^2 .
+\]
+In the one-writer case \(u\le\beta/2\); in the averaging pool the chosen slope gives the same bound over total range at most \(2\). Hence \(|p_O-\ell|\le P_0\beta^2=\beta\). For the execution curve, with target \(\ell=P_0(1-u)\),
+\[
+        (1+u)^{-1}-(1-u)=\frac{u^2}{1+u}\le u^2 .
+\]
+Now \(u\le\beta\) in both the one-writer and average cases, so again \(|p_O-\ell|\le P_0\beta^2=\beta\). Translating prices to \(y=P_0-p\) gives the displayed bounds.
+\end{proof}
+
+\begin{remark}[close factor]
+The slope matches above are compatible with the close-factor restriction. For any target ratio \(\alpha/R=\rho\), choose a rational collateral sale amount \(\alpha\le \cf C\) and set \(R=\alpha/\rho\). The reserves are positive rational numbers, and changing \(R\) does not alter the collateral-debt graph.
+\end{remark}
+
+\begin{lemma}[range]
+\label{lem:cprange}
+With cap \(M_O=P_0\), each pool's exact price drop over the relevant gate range is less than one:
+\[
+        \frac{1}{1+\beta}<1
+        \quad\text{for execution pricing,}\qquad
+        \frac{1+\beta/4}{(1+\beta/2)^2}<1
+        \quad\text{for marginal pricing.}
+\]
+Moreover, with the final choice \(\delta_{\mathrm{cp}}=\beta/2\) and \(\beta\le1/60\),
+\[
+        \frac{1}{1+\beta}+\delta_{\mathrm{cp}}<1,
+        \qquad
+        \frac{1+\beta/4}{(1+\beta/2)^2}+\delta_{\mathrm{cp}}<1 .
+\]
+Thus the lifted wire value stays strictly in the intended interval even after the allowed price residual. The clipped decoding is therefore inactive on gate outputs:
+\[
+        \clip_{[0,1]}(P_0-p)=P_0-p .
+\]
+\end{lemma}
+\begin{proof}
+The displayed expressions are the normalized price drops over the largest one-writer gate range after the slope match. Both are strictly below one for \(\beta>0\). Average pools use a smaller per-writer slope and the same total range bound. It remains to check that the final residual budget still keeps decoding inside the unclipped band.
+\[
+        \frac{1}{1+\beta}+\frac{\beta}{2}<1
+\]
+is equivalent to \(\beta(1-\beta)>0\), and
+\[
+        \frac{1+\beta/4}{(1+\beta/2)^2}+\frac{\beta}{2}<1
+\]
+is equivalent, after multiplying by \((1+\beta/2)^2\), to
+\[
+        \frac{3\beta}{4}+\frac{\beta^2}{2}+\frac{\beta^3}{8}
+        < \beta+\frac{\beta^2}{4},
+\]
+or \(2+\beta<2/\beta\), which holds for \(0<\beta\le1/60\). Hence no additional projection error appears in the final parameter regime.
+\end{proof}
+
+\begin{lemma}[macro error constants]
+\label{lem:cpB}
+Let \(r=2\delta+\beta\), where the two \(\delta\) terms account for liquidation and price residuals and \(\beta\) is the curvature error from Lemma~\ref{lem:cpcurv}. For the lifted constant-product gadgets,
+\[
+        e_{\neg}\le (2-\beta)r,\qquad
+        e_+\le (15-8\beta)r\le 30\delta+15\beta .
+\]
+\end{lemma}
+\begin{proof}
+A NOT residual is amplified by at most \(2-\beta\), giving \(e_{\neg}\le(2-\beta)r\). The SUM macro composes two complements, an average, a complement of the average, and a final gain-2 writer. The errors satisfy
+\[
+ e_{\bar U}=e_{\bar W}=(2-\beta)r,\quad
+ e_A=2(2-\beta)r,\quad
+ e_{\bar A}=3(2-\beta)r,
+\]
+and the final writer gives
+\[
+ e_O=2e_{\bar A}+(3-2\beta)r=(15-8\beta)r .
+\]
+Since \(\beta\le1\), this is at most \(30\delta+15\beta\). Generalized-circuit satisfaction is local, so these constants do not accumulate with the circuit size.
+\end{proof}
+
+\paragraph{Final constants.}
+Let \(\kappa\le1\) be the rational source accuracy constant after the harmless decrease in Theorem~\ref{thm:cphardness}. Set
+\[
+        P_0=60/\kappa,\qquad \beta=\kappa/60,\qquad
+        \delta_{\mathrm{cp}}=\beta/2=\kappa/120 .
+\]
+Every \(\delta_{\mathrm{cp}}\)-clearing decodes to a gate violation at most
+\[
+        30\delta_{\mathrm{cp}}+15\beta
+        =30\cdot\frac{\kappa}{120}+15\cdot\frac{\kappa}{60}
+        =\frac{\kappa}{2}<\kappa .
+\]
+This proves the robustness claim used in Theorem~\ref{thm:cphardness}.
 
 \section{Source Problem and Fan-Out}
 \label{app:source}
@@ -988,169 +1438,6 @@ B\ \text{is a nonsingular }M\text{-matrix}\\
 \end{aligned}
 \]
 locate the regimes. Small impact is an M-matrix box LCP, while large impact has a Z-matrix base that need not be a P-matrix. The unbounded Z-matrix LCP is polynomial for every Z-matrix. The obstruction here is the upper bound, whose standard-LCP embedding introduces the positive block shown in Appendix~\ref{app:zmatrix}.
-
-\begin{lemma}[extremal interior blocks are non-expansive]
-\label{lem:nonexp}
-Let \(y^\ast\) be the least fixed point of \(T(y)=\clip_{[0,u]}(Ay+c)\) with \(A\ge0\), and let \(S=\{i:0<y^\ast_i<u_i\}\). Then \(\rho(A_{SS})\le1\). The same holds, by the dual argument, for the interior block of the greatest fixed point.
-\end{lemma}
-\begin{proof}
-Suppose \(\rho(A_{SS})>1\). Since \(A_{SS}\ge0\), Perron--Frobenius gives an eigenvector \(v\ge0\), \(v\ne0\), with \(A_{SS}v=\lambda v\) and \(\lambda>1\). Define \(\tilde y_S=y^\ast_S-\varepsilon v\) and \(\tilde y_{\bar S}=y^\ast_{\bar S}\). For \(\varepsilon>0\) small enough, \(\tilde y_S\in(0,u_S)\), so the box projection is inactive on \(S\) and
-\[
-T_S(\tilde y)=(A\tilde y+c)_S
-       =y^\ast_S-\varepsilon A_{SS}v
-       =y^\ast_S-\varepsilon\lambda v
-       \le \tilde y_S .
-\]
-For a lower-boundary coordinate \(i\), monotonicity and \(\tilde y\le y^\ast\) give \(T_i(\tilde y)\le T_i(y^\ast)=0=\tilde y_i\). For an upper-boundary coordinate, projection gives \(T_i(\tilde y)\le u_i=\tilde y_i\). Hence \(T(\tilde y)\le\tilde y\), so \(\tilde y\) is a prefixed point, while \(\tilde y<y^\ast\). By Knaster--Tarski, the least fixed point is below every prefixed point, contradiction. The greatest-fixed-point statement follows by pushing upward by \(\varepsilon v\) and using the dual postfixed-point characterization.
-\end{proof}
-
-\paragraph{Why exact active-set methods are delicate.}
-Along the bottom Kleene sequence, each coordinate has a monotone phase structure. It can move only from the lower boundary toward the interior and from the interior toward the upper boundary, never in the opposite direction. We do not assert a finite phase-transition bound, since a coordinate may approach its upper bound only asymptotically. Within a fixed active set the dynamics is an affine recursion \(y_S^{t+1}=A_{SS}y_S^t+g\), and exact event-driven algorithms appear delicate because first-threshold times reduce to sign questions for matrix-power sequences. Moreover, for \(\rho(A)\ge1\) the box LCP can have several solutions, obstructing the unique-solution structure of \(\mathsf{UEOPL}\).
-
-\paragraph{An EOPL-style path viewpoint.}
-The monotone grid iteration \(y^{t+1}=T_\eta(y^t)\) with potential \(\phi(y)=\mathbf 1^\top y/\eta\) is a natural path-following viewpoint. The map \(T_\eta\) is isotone and rounds down, so the potential strictly increases off fixed points and is polynomially bounded. Turning this into an \(\mathsf{EOPL}\) reduction would require a polynomial predecessor selection for the monotone Kleene path. The forward map is single-valued, while predecessors need not be. Since Theorem~\ref{thm:mixedinP} gives an exact polynomial-time algorithm for affine subtraction-free maps, this viewpoint is recorded only as structural context for grid-based monotone searches.
-
-\paragraph{Complexity of the mixed-sign case (settled).}
-The Subtraction-Free Box Fixed Point problem is in \(\mathsf P\) for arbitrary drift by Theorem~\ref{thm:mixedinP}. For rational \(A\ge0\), arbitrary rational \(c\), and \(u>0\), the least fixed point of \(y=\clip_{[0,u]}(Ay+c)\) is computable in polynomial time. The algorithm combines Lemma~\ref{lem:lfpsub} (no ramping interior at the least fixed point) with a monotone activation loop. This reduces the problem to active blocks whose least fixed point is strictly positive, each solved by an exact from-above cascade. The difficulty is thus combinatorial and algebraic rather than Diophantine. The orbit-following and bounded-magnitude statements recorded below are method-level refinements around this exact algorithm, not its foundation. In particular, whether the one-pass \emph{symmetric} cascade always terminates is a separate method-level question that the activation algorithm sidesteps.
-
-\section{Subtraction-Free Box Fixed Points: Algorithmic Refinements}
-\label{app:sfbfp}
-
-We record complementary algorithmic refinements for the balanced map \(T(y)=\clip_{[0,u]}(Ay+c)\), \(A\ge0\), of Theorem~\ref{thm:balancedCLS} and Appendices~\ref{app:zmatrix} and~\ref{app:subtractionfree}. The main unconditional polynomial-time result is Theorem~\ref{thm:mixedinP} for arbitrary drift. Theorem~\ref{cor:inP} is its nonnegative-drift special case. This appendix should be read as method-level support for orbit-following, bounded-magnitude approximation, and spectrally separated exact computation. Let \(y^\ast\) be the least fixed point, \(L\) the input bit length, and \(U=\max_i u_i\). A point \(y\in[0,u]\) is a \emph{\(\delta\)-approximate fixed point} if \(\|T(y)-y\|_\infty\le\delta\), the residual notion in which \(\delta\)-clearing is posed. Throughout we use the stronger interior fact of Lemma~\ref{lem:lfpsub}. At \(y^\ast\), the strictly interior block \(S^\ast=\{i:0<y^\ast_i<u_i\}\) satisfies \(\rhospec(A_{S^\ast S^\ast})<1\).
-
-\paragraph{SCC-DAG decomposition.}
-Form the dependency digraph with arc \(i\to j\) iff \(A_{ij}\ne0\). Let \(C_1,\dots,C_m\) be its strongly connected components, ordered so that whenever \(C_b\) reads \(C_a\) we have \(a<b\).
-
-\begin{lemma}[topological resolution]
-\label{sfbfp:scc}
-\(y^\ast_{C_a}\) is the least fixed point of
-\[
-        T_a(z)=\clip_{[0,u_{C_a}]}(A_{C_aC_a}z+g_a),
-        \qquad
-        g_a=c_{C_a}+\sum_{b<a}A_{C_aC_b}y^\ast_{C_b},
-\]
-where \(g_a\) is fixed by upstream blocks.
-\end{lemma}
-\begin{proof}
-\(C_a\) reads only \(C_a\) and components it depends on, among \(C_1,\dots,C_{a-1}\). Thus \(y^\ast_{C_a}\) is a fixed point of \(T_a\). Minimality follows by induction, since the global bottom Kleene orbit restricted to \(C_a\) is the orbit of \(T_a\) once upstream has converged.
-\end{proof}
-
-A Jordan block of \(A\) at the unit circle can arise only from coupling \emph{between} critical SCCs, and is linearized away by resolving each upstream critical SCC to its constant limit. Within each \(C_a\), the matrix \(A_{C_aC_a}\) is irreducible, so its peripheral spectrum is \(\rhospec\) times roots of unity and semisimple.
-
-\begin{lemma}[residual locality]
-\label{sfbfp:resid}
-For any \(y\in[0,u]\) assembled block by block in topological order,
-\[
-        \|T(y)-y\|_\infty
-        =\max_a\|T_a(y_{C_a})-y_{C_a}\|_\infty,
-\]
-with each \(T_a\) using the stored upstream values. Hence resolving every block's sub-map to residual at most \(\delta\) yields global residual at most \(\delta\).
-\end{lemma}
-\begin{proof}
-For \(i\in C_a\), \((Ay+c)_i=(A_{C_aC_a}y_{C_a}+g_a)_i\) with \(g_a\) formed from the stored upstream values, so \(T(y)_i=T_a(y_{C_a})_i\).
-\end{proof}
-
-\begin{remark}
-Lemma~\ref{sfbfp:resid} concerns the residual \(\|T(y)-y\|\), the clearing accuracy of interest. Approximating \(y^\ast\) in value would require a Lipschitz propagation bound and per-block accuracy depending on downstream gains. We do not need it.
-\end{remark}
-
-\paragraph{Per-block taxonomy.}
-It suffices to solve one irreducible block \(z=\clip_{[0,u_S]}(Bz+g)\), \(B=A_{SS}\ge0\), with \(r=\rhospec(B)\).
-
-\begin{lemma}[LP detects divergence]
-\label{sfbfp:lp}
-For any \(B\ge0\), the polyhedron \(P=\{z\ge0:(I-B)z\ge g\}\) is closed under coordinate-wise minimum. If \(P\ne\emptyset\), it has a least element, returned by minimizing \(\mathbf 1^\top z\) over \(P\). Moreover, \(P=\emptyset\) iff the lower-bounded relaxation \(z=\max(Bz+g,0)\) diverges to \(+\infty\).
-\end{lemma}
-
-\begin{lemma}[subcritical upper bound]
-\label{sfbfp:sub}
-If the least element \(z^\star\) of \(P\) exists with \(z^\star\le u_S\), then \(z^\star\) is the exact box fixed point, computed in \(\mathrm{poly}(|S|,L)\) time by the LP of Lemma~\ref{sfbfp:lp}. In particular, when \(r<1\) and the residual drift is nonnegative, the unclipped solve \(\hat z=(I-B)^{-1}g\) is an upper bound on the box least fixed point and is exact if \(\hat z\le u_S\). If \(\hat z\not\le u_S\), the coordinates with \(\hat z_i>u_i\) need not be exactly the true clamp set. They may strictly over-cap and must be followed by a verification/repair step rather than accepted as final.
-\end{lemma}
-\begin{proof}
-\(z^\star\) solves the lower-bounded relaxation, whose map dominates \(T\) on \([0,u_S]\). Hence the box least fixed point is at most \(z^\star\). If \(z^\star\le u_S\), the box projection is inactive at \(z^\star\), so \(z^\star\) is itself a box fixed point and therefore equals the box least fixed point. For \(r<1\) and \(g\ge0\), the unclipped Kleene orbit increases to \(\hat z=(I-B)^{-1}g\), while the clipped orbit is coordinate-wise no larger. Thus \(\hat z\) is an upper bound and is exact if it lies inside the box. The over-cap warning is witnessed by
-\[
-        B=\begin{pmatrix}0&1\\0&0\end{pmatrix},\qquad
-        g=(0,10),\qquad
-        u=(5,1),
-\]
-for which \(\hat z=(10,10)\), but the box fixed point is \((1,1)\). Hence the first coordinate is falsely over-threshold in the relaxation.
-\end{proof}
-
-\begin{remark}[relaxation is an upper bound]
-\label{sfbfp:upper}
-\(P\) drops the box, so its least element dominates \(y^\ast_S\). Thus ``the relaxation diverges'' does not imply that the box system diverges to \(u\). A supercritical block can settle finitely when a coordinate clips to \(0\), breaking the feedback. This is why each block is resolved inside its own box.
-\end{remark}
-
-\begin{lemma}[ramp step counts]
-\label{sfbfp:ramp}
-For an irreducible block with \(r\ge1\) whose lower-bounded LP is infeasible, bottom Kleene reaches its first clamp event in \(O(U/\bar\alpha)\le O(U/\delta)\) iterations when \(r=1\), where \(\bar\alpha\) is the asymptotic per-step drift envelope over the peripheral period. If \(\bar\alpha\le\delta\), the current iterate is already a \(\delta\)-approximate fixed point. When \(r>1\), the first clamp is reached in \(O(\log U/\log r)\) iterations. Each block contributes at most \(|S|\) clamp events.
-\end{lemma}
-\begin{proof}
-The interior increment is \(d^{(t)}=B^tg\). For \(r=1\), the semisimple peripheral spectrum gives linear growth of the partial sums along the Perron direction, with a bounded periodic fluctuation when the block is imprimitive. Taking \(\bar\alpha\) as the maximum drift over one peripheral period, the position advances at rate at most a constant-period oscillation around \(t\bar\alpha\hat v\), so a cap is reached after \(O(U/\bar\alpha)\) steps. If this envelope is at most \(\delta\), the residual is already at most \(\delta\). For \(r>1\), the Perron mode dominates and the cap \(U\) is reached after \(O(\log U/\log r)\) steps.
-\end{proof}
-
-\paragraph{Approximation, scoped.}
-
-\begin{proposition}[\(\delta\)-approximate least fixed point]
-\label{sfbfp:approx}
-Resolving blocks in topological order, using Lemma~\ref{sfbfp:sub} for LP-bounded exact blocks and verified subcritical relaxation/repair steps, and using bottom Kleene with Lemma~\ref{sfbfp:ramp} for ramping blocks, returns a \(\delta\)-approximate fixed point in time
-\[
-        O\!\left(n^2\left(nU/\delta+n\log U/\log r_{\min}\right)\right)
-        =\mathrm{poly}(n,L,\|A\|_\infty,U,1/\delta).
-\]
-Consequently, for normalized, polynomially bounded instances with \(U,\|A\|_\infty=\mathrm{poly}(n,L)\) and \(\delta\ge1/\mathrm{poly}(n,L)\), the running time is polynomial. For arbitrary \(A\ge0,c,u,\delta\), the algorithm is pseudo-polynomial in \(n,L,\|A\|_\infty,U,1/\delta\).
-\end{proposition}
-\begin{proof}
-By Lemma~\ref{sfbfp:resid}, the global residual is the maximum per-block residual. LP-bounded blocks have residual \(0\), and subcritical over-caps are checked and repaired before a block is accepted. A ramping block either has increment \(\bar\alpha\le\delta\) or reaches a clamp within the count of Lemma~\ref{sfbfp:ramp}, after which it is re-decomposed. Iterating leaves every block with residual at most \(\delta\). The time bound follows from at most \(|S|\) accepted clamp events per block over at most \(n\) blocks, each preceded by \(O(U/\delta)\) or \(O(\log U/\log r)\) iterations of cost \(O(n^2)\). The repair steps are included in the method-level accounting.
-\end{proof}
-
-\begin{corollary}[approximate clearing for balanced large-impact markets]
-\label{sfbfp:clearing}
-In the transformed system of Lemma~\ref{lem:nonneg}, \(y=(q,z)\) has box upper bounds \(M_k\) on prices and \(1\) on liquidations, and \(A\) has off-diagonal entries \(s_k\alpha_i\) in the price block and \(\theta_iD_i/\varepsilon_i, C_i/\varepsilon_i\) in the liquidation block. Hence \(U=\max_kM_k\) and \(\|A\|_\infty\) may be exponentially large binary rationals. For instances in which the price caps \(M_k\), impact products \(s_k\alpha_i\), and inverse smoothing widths \(\theta_iD_i/\varepsilon_i, C_i/\varepsilon_i\) are polynomially bounded, a \(\delta\)-clearing is computable in polynomial time for inverse-polynomial \(\delta\). In general the algorithm is pseudo-polynomial in these magnitudes and \(1/\delta\).
-\end{corollary}
-
-\paragraph{Exact solution under spectral separation.}
-
-\begin{definition}[\(\gamma\)-spectral separation]
-\label{sfbfp:sep}
-An instance is \emph{\(\gamma\)-spectrally separated} if every irreducible block \(B=A_{SS}\) that arises during the full recursive SCC-DAG resolution, including every residual subblock created after clamping coordinates to \(0\) or \(u\), satisfies \(\rhospec(B)\le1-\gamma\) or \(\rhospec(B)\ge1+\gamma\), unless the lower-bounded relaxation LP for \(B\) is feasible with least element at most \(u_S\), so the block is resolved exactly by the LP with no ramp.
-\end{definition}
-
-\begin{theorem}[exact polynomial-time solution]
-\label{sfbfp:exact}
-If an instance is \(\gamma\)-spectrally separated with \(\gamma\ge1/\mathrm{poly}(n,L)\), then the exact least fixed point \(y^\ast\) is computable in \(\mathrm{poly}(n,L)\) time, even when the box bounds are exponentially large. No tie-breaking hypothesis is needed.
-\end{theorem}
-\begin{proof}
-Every block encountered by the recursive algorithm is subcritical, LP-bounded, or supercritical with \(r\ge1+\gamma\). No block is a critical or barely-supercritical ramp. Subcritical and LP-bounded blocks are exact in polynomial time. A supercritical block reaches its next clamp, or is driven to \(0\) by lower clipping, within \(O(\log U/\log(1+\gamma))=O(L/\gamma)=\mathrm{poly}(n,L)\) bottom-Kleene iterations. After the clamp, the algorithm re-decomposes the residual subblocks, which are covered again by Definition~\ref{sfbfp:sep}. Thus each of the at most \(|S|\) clamp events in the recursive resolution has the same polynomial bound. Once no clamp remains, the interior residual is obtained by one exact linear solve. Simultaneous boundary hits are handled by the clip, so no separation of hitting times is needed.
-\end{proof}
-
-\paragraph{The critical event-jump.}
-For orbit-following methods, the delicate subcase is an irreducible block with \(\rhospec=1\) and positive drift ramping to its box. The algebraic cascade of Theorem~\ref{cor:inP} (nonnegative drift) and the activation algorithm of Theorem~\ref{thm:mixedinP} (arbitrary drift) bypass this timing problem. The event-jump below remains useful as a certified description of the trajectory and as a method-level refinement.
-
-\begin{proposition}[null-vector ramp event, proven special case]
-\label{sfbfp:jump}
-Let \(B\ge0\) be irreducible with \(\rhospec(B)=1\), constant input \(g\), and suppose the block ramps, i.e., the LP of Lemma~\ref{sfbfp:lp} is infeasible. Let \(v>0\) be the positive right null vector of \(B-I\). Then the bottom Kleene orbit advances along \(v\), and, when \(B\) is primitive or the headroom ratios are separated by \(\min_{i\ne j}|u_i/v_i-u_j/v_j|\ge2^{-\mathrm{poly}(n,L)}\), the first coordinate to reach its cap is \(j=\arg\min_i u_i/v_i\), independently of the drift magnitude. Clamping \(j\) and recursing terminates in at most \(|S|\) events, each a null-vector plus a ratio test, in \(\mathrm{poly}(|S|,L)\) time with no dependence on \(U\) or the drift.
-\end{proposition}
-
-\noindent\emph{Status.}
-An unconditional orbit-following event-jump still requires period-\(h\) phase alignment for near-tie boundary events, rational bit-complexity of the null-vector and ratio computations, and control of the post-clamp residual when the reduced block is supercritical. These points are separate from the proofs of Theorem~\ref{cor:inP} and Theorem~\ref{thm:mixedinP}.
-
-\paragraph{Refinement of the complexity map.}
-\begin{center}
-\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.50\linewidth} l}
-\hline
-\textbf{Regime (smooth model)} & \textbf{Result}\\
-\hline
-sign-balanced & in \(\mathrm{CLS}\)\\
-sign-balanced \(+\) small impact \((\rhospec(A)<1)\) & \(\mathrm{P}\)\\
-sign-balanced \(+\) nonnegative drift & \(\mathrm{P}\) (Thm.~\ref{cor:inP})\\
-sign-balanced \(+\) \(\gamma\)-spectral separation & exact \(\mathrm{P}\) (Thm.~\ref{sfbfp:exact})\\
-sign-balanced, bounded caps/impact/\(1/\varepsilon\), inverse-poly \(\delta\) & poly-time \(\delta\)-approx (Prop.~\ref{sfbfp:approx})\\
-sign-balanced \(+\) arbitrary drift & \(\mathsf P\) (Theorem~\ref{thm:mixedinP}); interior subcritical (Lemma~\ref{lem:lfpsub})\\
-non-bipartite, large impact & PPAD-hard\\
-\hline
-\end{tabular}
-\end{center}
+The correct classical object is therefore bounded Z-matrix complementarity rather than the ordinary embedded LCP. Proposition~\ref{thm:mixedinP} invokes the least-element theory for that bounded problem. The small-impact M-matrix regime remains useful because it gives uniqueness and contraction.
 
 \end{document}

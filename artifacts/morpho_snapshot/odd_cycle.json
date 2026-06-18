@@ -1,0 +1,62 @@
+{
+  "cycle": [
+    "LBTC (0x8236...4494)",
+    "USDC (0xA0b8...eB48)",
+    "WBTC (0x2260...C599)",
+    "LBTC (0x8236...4494)"
+  ],
+  "thresholds": [
+    {
+      "threshold_usd": 0.0,
+      "active_edges": 554,
+      "assets": 365,
+      "bipartite": false,
+      "odd_cycle": [
+        "RLP (0x4956...8f96)",
+        "AUSD (0x0000...012a)",
+        "AA_FalconXUSDC (0xC26A...f99C)",
+        "USDC (0xA0b8...eB48)",
+        "USR (0x66a1...e110)",
+        "RLP (0x4956...8f96)"
+      ]
+    },
+    {
+      "threshold_usd": 100.0,
+      "active_edges": 214,
+      "assets": 153,
+      "bipartite": false,
+      "odd_cycle": [
+        "wstETH (0x7f39...2Ca0)",
+        "AUSD (0x0000...012a)",
+        "AA_FalconXUSDC (0xC26A...f99C)",
+        "USDC (0xA0b8...eB48)",
+        "WBTC (0x2260...C599)",
+        "wstETH (0x7f39...2Ca0)"
+      ]
+    },
+    {
+      "threshold_usd": 1000.0,
+      "active_edges": 192,
+      "assets": 140,
+      "bipartite": false,
+      "odd_cycle": [
+        "LBTC (0x8236...4494)",
+        "USDC (0xA0b8...eB48)",
+        "WBTC (0x2260...C599)",
+        "LBTC (0x8236...4494)"
+      ]
+    },
+    {
+      "threshold_usd": 10000.0,
+      "active_edges": 172,
+      "assets": 122,
+      "bipartite": false,
+      "odd_cycle": [
+        "LBTC (0x8236...4494)",
+        "USDC (0xA0b8...eB48)",
+        "WBTC (0x2260...C599)",
+        "LBTC (0x8236...4494)"
+      ]
+    }
+  ]
+}
