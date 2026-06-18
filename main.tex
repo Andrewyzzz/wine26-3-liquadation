@@ -50,7 +50,7 @@ As a lightweight protocol calibration, we queried the Morpho public API on June 
 \[
    \mathrm{LBTC}\;-\;\mathrm{USDC}\;-\;\mathrm{WBTC}\;-\;\mathrm{LBTC}.
 \]
-Appendix~\ref{app:morpho} gives the reproducibility details and a scale calculation for when AMM price impact leaves the small-impact regime. This is a relevance witness for realized role reversal, not an empirical hardness claim.
+Appendix~\ref{app:morpho} gives the reproducibility details and a Uniswap-v3 stress calibration. On a mainstream \(\mathrm{USDC}\)-\(\mathrm{WBTC}\)-\(\mathrm{WETH}\) odd cycle in the same snapshot, selling only \(1\%\) of the WBTC collateral exposure on the WBTC/USDC edge is \(4.25\%\) of the active WBTC-side Uniswap-v3 reserve, giving marginal-price gain \(8.5\) at smoothing width \(\eta=1\%\). This is a relevance witness for realized role reversal and market-impact scale, not an empirical hardness claim.
 
 \paragraph{A DeFi-native negative feedback.}
 Consider three assets \(A,B,C\) and three positions
@@ -707,14 +707,20 @@ Morpho Blue documentation: Get Data.
 
 \section{Protocol Snapshot Calibration}
 \label{app:morpho}
-To check that collateral/debt role reversal is not only a syntactic possibility, we queried Morpho's public GraphQL API~\cite{MorphoDocs} for Ethereum markets ordered by borrow balance. The artifact in \texttt{artifacts/morpho\_snapshot/} stores the raw API response, the active edge list, the odd-cycle witness, and the script that regenerates the table below. An edge is active at threshold \(T\) if both the aggregate borrow exposure and aggregate collateral exposure of that market are at least \(T\) USD. This is a snapshot-level relevance check for realized market structure; it is not used by any hardness proof.
+To check that collateral/debt role reversal is not only a syntactic possibility, we queried Morpho's public GraphQL API~\cite{MorphoDocs} for Ethereum markets ordered by borrow balance. The snapshot artifact stores the raw API response, active edge list, odd-cycle witness, and regeneration script. An edge is active at threshold \(T\) if both the aggregate borrow exposure and aggregate collateral exposure of that market are at least \(T\) USD. This is a snapshot-level relevance check for realized market structure; it is not used by any hardness proof.
 
 \begin{center}
 \input{artifacts/morpho_snapshot/summary.tex}
 \end{center}
 
 \paragraph{Scale of the small-impact condition.}
-The snapshot above certifies role reversal, not price-impact gain. The small-impact contraction condition in the theory depends on market-depth and smoothing-width parameters, so it is better interpreted through a sensitivity scale. Let \(f=Q/R\) be the fraction of the relevant AMM reserve sold into a constant-product pool, and let \(\eta=\varepsilon/(C p_a)\) be the liquidation smoothing width as a fraction of collateral value. For a marginal constant-product price \(p(Q)=P(1+Q/R)^{-2}\), the local relative price change is approximately \(2f\). For an execution-price curve \(p(Q)=P(1+Q/R)^{-1}\), it is approximately \(f\). Thus a one-position feedback gain is on the order of \(2f/\eta\) for marginal pricing and \(f/\eta\) for execution pricing. The unit-gain thresholds are:
+The snapshot above certifies role reversal, not price-impact gain. To calibrate market depth, the companion artifact takes a mainstream odd cycle from the same \(10{,}000\)-USD threshold graph, \(\mathrm{USDC}\)--\(\mathrm{WBTC}\)--\(\mathrm{WETH}\)--\(\mathrm{USDC}\), queries Uniswap v3 pools at a fixed Ethereum block, and compares small collateral-sale stresses with the active virtual reserve of the collateral token.
+
+\begin{center}
+\input{artifacts/impact_calibration/summary.tex}
+\end{center}
+
+The small-impact contraction condition in the theory depends on market depth and smoothing width, so this table should be read as a stress calibration. Let \(f=Q/R\) be the fraction of the relevant AMM reserve sold into a constant-product pool, and let \(\eta=\varepsilon/(C p_a)\) be the liquidation smoothing width as a fraction of collateral value. For a marginal constant-product price \(p(Q)=P(1+Q/R)^{-2}\), the local relative price change is approximately \(2f\). For an execution-price curve \(p(Q)=P(1+Q/R)^{-1}\), it is approximately \(f\). Thus a one-position feedback gain is on the order of \(2f/\eta\) for marginal pricing and \(f/\eta\) for execution pricing. The unit-gain thresholds are:
 \[
 \begin{array}{c|cccc}
 \eta & 0.5\% & 1\% & 2\% & 5\%\\
